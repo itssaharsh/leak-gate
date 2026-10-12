@@ -39,6 +39,10 @@ function SignupForm() {
       <Field label="Email" name="email" type="email" autoComplete="email" error={problems.email} />
       <Field label="Mobile number" name="phone" type="tel" autoComplete="tel" error={problems.phone} hint="We text you on delivery day." />
       <Field label="Password" name="password" type="password" autoComplete="new-password" error={problems.password} hint="At least 10 characters." />
+      <label className="flex items-start gap-3 text-sm">
+        <input type="checkbox" name="newsletter" className="mt-1 size-4" />
+        <span>Send me the monthly plant-care newsletter. You can leave any time.</span>
+      </label>
       <button disabled={busy} className="h-12 rounded-lg bg-[#24603A] font-semibold text-white hover:bg-[#1C4D2E] disabled:opacity-60">
         {busy ? "Creating your account…" : "Create account"}
       </button>
