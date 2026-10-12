@@ -219,12 +219,8 @@ production-canary:
     CANARY_ENV: main
     CANARY_FN: leakgate-shop-main
   script:
-    - set +e
-    - npx tsx packages/drill/src/cli.ts --shop-url "$CANARY_URL" --env "$CANARY_ENV" --log-group "/aws/lambda/$CANARY_FN" --out reports --post "$GATE_URL" --label "Hourly production canary"
-    - CODE=$?
-    - set -e
-    - if [ "$CODE" = "1" ]; then bash scripts/open-incident.sh reports/summary.md; fi
-    - exit $CODE
+    # One line, so the exit code is read before the runner runs anything else.
+    - CODE=0; npx tsx packages/drill/src/cli.ts --shop-url "$CANARY_URL" --env "$CANARY_ENV" --log-group "/aws/lambda/$CANARY_FN" --out reports --post "$GATE_URL" --label "Hourly production canary" || CODE=$?; if [ "$CODE" = "1" ]; then bash scripts/open-incident.sh reports/summary.md; fi; exit $CODE
   artifacts:
     when: always
     paths: [reports/]
