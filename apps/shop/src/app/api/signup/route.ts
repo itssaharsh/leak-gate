@@ -16,8 +16,8 @@ export async function POST(req: Request) {
 
   const problems = signupProblems(body);
   if (Object.keys(problems).length > 0) {
-    // Attach the submitted form so failed signups can be debugged from the error tracker.
-    await reportError(new Error("signup validation failed"), { route: ROUTE, fields: Object.keys(problems), request: body });
+    // Report which fields failed and which were submitted, never their values.
+    await reportError(new Error("signup validation failed"), { route: ROUTE, fields: Object.keys(problems), request: { submittedFields: Object.keys(body) } });
     accessLine(req, ROUTE, 400, startedAt);
     return Response.json({ error: "Check the highlighted fields.", problems }, { status: 400 });
   }
@@ -34,12 +34,12 @@ export async function POST(req: Request) {
   }
 
   if (newsletter) {
-    log("newsletter opt-in", { userId, body });
+    log("newsletter opt-in", { userId });
     await sendToVendor("email-vendor", { list: "newsletter", to: user.email, name: user.name });
   }
 
   // Segment newsletter subscribers in analytics.
-  await identify(userId, { plan: "none", newsletter, name: user.name, email: user.email, phone: user.phone });
+  await identify(userId, { plan: "none", newsletter });
   await sendToVendor("email-vendor", { template: "welcome", to: user.email, name: user.name });
   log("signup", { userId, newsletter });
 
