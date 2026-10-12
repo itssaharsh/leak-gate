@@ -101,6 +101,15 @@ export function toGitLabSecurityReport(report: DrillReport, map: DataMap): objec
   };
 }
 
+/** A window of `width` characters around the needle, so the planted value is always visible. */
+export function aroundNeedle(text: string, needle: string, width: number): string {
+  if (text.length <= width) return text;
+  const i = text.toLowerCase().indexOf(needle.toLowerCase());
+  if (i < 0) return text.slice(0, width) + "…";
+  const start = Math.max(0, Math.min(i - Math.floor((width - needle.length) / 2), text.length - width));
+  return (start > 0 ? "…" : "") + text.slice(start, start + width) + (start + width < text.length ? "…" : "");
+}
+
 /** A short markdown summary for job logs and merge request notes. */
 export function toMarkdown(report: DrillReport, map: DataMap): string {
   const lines = [
@@ -113,7 +122,7 @@ export function toMarkdown(report: DrillReport, map: DataMap): string {
   if (leaks.length) {
     lines.push("| Field | Reached | During | Captured |", "|---|---|---|---|");
     for (const h of leaks) {
-      lines.push(`| ${h.field} | ${destinationLabel(map, h.destination)} | ${h.journey ?? ""} | \`${h.excerpt.replace(/\|/g, "\\|").slice(0, 160)}\` |`);
+      lines.push(`| ${h.field} | ${destinationLabel(map, h.destination)} | ${h.journey ?? ""} | \`${aroundNeedle(h.excerpt, h.needle, 120).replace(/\|/g, "\\|")}\` |`);
     }
   } else if (report.status === "passed") {
     lines.push("No planted value reached a destination outside `privacy/datamap.yml`.");

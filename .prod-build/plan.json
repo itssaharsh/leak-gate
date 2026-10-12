@@ -168,10 +168,15 @@
         "bash infra/aws/smoke.sh"
       ],
       "rollback": "infra/aws/teardown.sh removes the functions and tables",
-      "status": "doing",
+      "status": "done",
       "notes": "",
       "base": "53c5352",
-      "started_after": 11
+      "started_after": 11,
+      "evidence": [
+        "E0012",
+        "E0013",
+        "E0014"
+      ]
     },
     {
       "id": "T05",
@@ -192,8 +197,15 @@
         "npm run build -w apps/shop"
       ],
       "rollback": "delete the branch and the leaky function",
-      "status": "todo",
-      "notes": "Code lives on branch newsletter-optin, not on main"
+      "status": "done",
+      "notes": "Code lives on branch newsletter-optin, not on main",
+      "base": "0e896e7",
+      "started_after": 14,
+      "evidence": [
+        "E0015",
+        "E0016",
+        "E0017"
+      ]
     },
     {
       "id": "T06",
@@ -218,8 +230,15 @@
         "observe: live drill against shop-leaky reports 3 leaks and against shop-main reports 0"
       ],
       "rollback": "git revert",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "0e896e7",
+      "started_after": 18,
+      "evidence": [
+        "E0019",
+        "E0020",
+        "E0021"
+      ]
     },
     {
       "id": "T07",

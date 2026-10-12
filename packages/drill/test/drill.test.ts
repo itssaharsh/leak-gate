@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { cleanFirstName, findMarkers, makeCanary } from "../src/canary";
 import { countLeaks, matchCaptures, summarize } from "../src/compare";
 import { isAllowed, parseDataMap } from "../src/datamap";
-import { toGitLabSecurityReport, toJUnit, toMarkdown } from "../src/report";
+import { aroundNeedle, toGitLabSecurityReport, toJUnit, toMarkdown } from "../src/report";
 import { anyTermPattern, captureSortKey } from "../src/sinks";
 import type { Capture, DrillReport, JourneyResult } from "../src/types";
 
@@ -155,6 +155,13 @@ describe("reports", () => {
 
   it("summarises for a merge request note", () => {
     expect(toMarkdown(report(), datamap)).toContain("blocked, 1 leak");
+  });
+
+  it("centres a long excerpt on the planted value", () => {
+    const text = "a".repeat(300) + "NEEDLE" + "b".repeat(300);
+    const w = aroundNeedle(text, "needle", 40);
+    expect(w).toContain("NEEDLE");
+    expect(w.startsWith("…") && w.endsWith("…")).toBe(true);
   });
 });
 
