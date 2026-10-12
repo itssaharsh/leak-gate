@@ -1,0 +1,569 @@
+{
+  "schema": "leak-gate/drill-report@1",
+  "runId": "run_mv5bxh8b_fm7e",
+  "build": "leaky",
+  "env": "leaky",
+  "shopUrl": "https://aoaoj5gt5dxxen3zxzw7unap5u0imucb.lambda-url.us-east-1.on.aws/",
+  "startedAt": 1791814231163,
+  "canary": {
+    "runId": "run_mv5bxh8b_fm7e",
+    "code": "JM25",
+    "name": "Ada Canary-7CAF",
+    "email": "ada.27w7xk@canary.leakgate.test",
+    "phone": "+44 7700 900857",
+    "password": "Cnry!F53Z5JSE#26",
+    "address": "Flat 78VJZ, 12 Linden Row, Bristol BS1 4DJ",
+    "markers": [
+      {
+        "field": "name",
+        "value": "Ada Canary-7CAF"
+      },
+      {
+        "field": "email",
+        "value": "ada.27w7xk@canary.leakgate.test"
+      },
+      {
+        "field": "phone",
+        "value": "+44 7700 900857"
+      },
+      {
+        "field": "password",
+        "value": "Cnry!F53Z5JSE#26"
+      },
+      {
+        "field": "address",
+        "value": "Flat 78VJZ, 12 Linden Row, Bristol BS1 4DJ"
+      }
+    ]
+  },
+  "journeys": [
+    {
+      "id": "signup-weak",
+      "label": "Signing up (a too-short password first)",
+      "route": "/api/signup",
+      "file": "apps/shop/src/app/api/signup/route.ts",
+      "status": 400,
+      "ok": true,
+      "startedAt": 1791814231164,
+      "endedAt": 1791814235781
+    },
+    {
+      "id": "signup",
+      "label": "Signing up",
+      "route": "/api/signup",
+      "file": "apps/shop/src/app/api/signup/route.ts",
+      "status": 201,
+      "ok": true,
+      "startedAt": 1791814235781,
+      "endedAt": 1791814236814
+    },
+    {
+      "id": "checkout",
+      "label": "Checking out",
+      "route": "/api/checkout",
+      "file": "apps/shop/src/app/api/checkout/route.ts",
+      "status": 201,
+      "ok": true,
+      "startedAt": 1791814236814,
+      "endedAt": 1791814237175
+    },
+    {
+      "id": "support",
+      "label": "Sending a support message",
+      "route": "/api/support",
+      "file": "apps/shop/src/app/api/support/route.ts",
+      "status": 202,
+      "ok": true,
+      "startedAt": 1791814237175,
+      "endedAt": 1791814237449
+    }
+  ],
+  "events": [
+    {
+      "at": 1791814231163,
+      "step": "plant",
+      "label": "Planting synthetic customer",
+      "index": 1,
+      "total": 7,
+      "state": "running"
+    },
+    {
+      "at": 1791814231164,
+      "step": "plant",
+      "label": "Planting synthetic customer",
+      "index": 1,
+      "total": 7,
+      "state": "done",
+      "detail": "Ada Canary-7CAF · ada.27w7xk@canary.leakgate.test"
+    },
+    {
+      "at": 1791814231164,
+      "step": "journeys",
+      "label": "Running the customer's journeys",
+      "index": 2,
+      "total": 7,
+      "state": "running"
+    },
+    {
+      "at": 1791814235781,
+      "step": "journeys",
+      "label": "Running the customer's journeys",
+      "index": 2,
+      "total": 7,
+      "state": "running",
+      "detail": "Signing up (a too-short password first): 400"
+    },
+    {
+      "at": 1791814236814,
+      "step": "journeys",
+      "label": "Running the customer's journeys",
+      "index": 2,
+      "total": 7,
+      "state": "running",
+      "detail": "Signing up: 201"
+    },
+    {
+      "at": 1791814237175,
+      "step": "journeys",
+      "label": "Running the customer's journeys",
+      "index": 2,
+      "total": 7,
+      "state": "running",
+      "detail": "Checking out: 201"
+    },
+    {
+      "at": 1791814237449,
+      "step": "journeys",
+      "label": "Running the customer's journeys",
+      "index": 2,
+      "total": 7,
+      "state": "running",
+      "detail": "Sending a support message: 202"
+    },
+    {
+      "at": 1791814237449,
+      "step": "journeys",
+      "label": "Running the customer's journeys",
+      "index": 2,
+      "total": 7,
+      "state": "done",
+      "detail": "4/4 journeys"
+    },
+    {
+      "at": 1791814237449,
+      "step": "settle",
+      "label": "Waiting for the shop's logs to land",
+      "index": 3,
+      "total": 7,
+      "state": "running"
+    },
+    {
+      "at": 1791814244367,
+      "step": "settle",
+      "label": "Waiting for the shop's logs to land",
+      "index": 3,
+      "total": 7,
+      "state": "done",
+      "detail": "4/4 access lines in CloudWatch"
+    },
+    {
+      "at": 1791814244367,
+      "step": "search-logs",
+      "label": "Searching app logs",
+      "index": 4,
+      "total": 7,
+      "state": "running"
+    },
+    {
+      "at": 1791814246757,
+      "step": "search-logs",
+      "label": "Searching app logs",
+      "index": 4,
+      "total": 7,
+      "state": "done",
+      "detail": "1 matching log events"
+    },
+    {
+      "at": 1791814246757,
+      "step": "search-vendors",
+      "label": "Searching vendor captures",
+      "index": 5,
+      "total": 7,
+      "state": "running"
+    },
+    {
+      "at": 1791814249541,
+      "step": "search-vendors",
+      "label": "Searching vendor captures",
+      "index": 5,
+      "total": 7,
+      "state": "done",
+      "detail": "8 vendor requests read"
+    },
+    {
+      "at": 1791814249541,
+      "step": "search-database",
+      "label": "Searching the shop database",
+      "index": 6,
+      "total": 7,
+      "state": "running"
+    },
+    {
+      "at": 1791814249617,
+      "step": "search-database",
+      "label": "Searching the shop database",
+      "index": 6,
+      "total": 7,
+      "state": "done",
+      "detail": "1 records read"
+    },
+    {
+      "at": 1791814249617,
+      "step": "compare",
+      "label": "Comparing with the data map",
+      "index": 7,
+      "total": 7,
+      "state": "running"
+    },
+    {
+      "at": 1791814249619,
+      "step": "compare",
+      "label": "Comparing with the data map",
+      "index": 7,
+      "total": 7,
+      "state": "done",
+      "detail": "11 leaks"
+    }
+  ],
+  "endedAt": 1791814249619,
+  "destinations": [
+    {
+      "id": "database",
+      "label": "Shop database",
+      "kind": "internal",
+      "simulated": false,
+      "leaks": 0,
+      "allowedHits": 3
+    },
+    {
+      "id": "app-logs",
+      "label": "App logs",
+      "kind": "internal",
+      "simulated": false,
+      "leaks": 4,
+      "allowedHits": 0
+    },
+    {
+      "id": "error-tracker",
+      "label": "Error tracker",
+      "kind": "vendor",
+      "simulated": true,
+      "leaks": 4,
+      "allowedHits": 0
+    },
+    {
+      "id": "analytics",
+      "label": "Analytics",
+      "kind": "vendor",
+      "simulated": true,
+      "leaks": 3,
+      "allowedHits": 0
+    },
+    {
+      "id": "email-vendor",
+      "label": "Email vendor",
+      "kind": "vendor",
+      "simulated": true,
+      "leaks": 0,
+      "allowedHits": 2
+    },
+    {
+      "id": "shipping-vendor",
+      "label": "Shipping vendor",
+      "kind": "vendor",
+      "simulated": true,
+      "leaks": 0,
+      "allowedHits": 2
+    }
+  ],
+  "hits": [
+    {
+      "field": "name",
+      "destination": "app-logs",
+      "allowed": false,
+      "needle": "Canary-7CAF",
+      "excerpt": "…:\"info\",\"msg\":\"newsletter opt-in\",\"userId\":\"u_9aec19ceb273\",\"body\":{\"name\":\"Ada Canary-7CAF\",\"email\":\"ada.27w7xk@canary.leakgate.test\",\"phone\":\"+44 7700 900857\",\"password\":\"Cnry!F53Z5JSE#26\",\"newsletter\":true},\"at\":\"2026-10-12T14:10:36.184Z…",
+      "source": "/aws/lambda/leakgate-shop-leaky",
+      "at": 1791814236184,
+      "ref": "2026/10/12/[$LATEST]d76a319f607e47c5a2f6e2d1952fc9df/39958792724239153945650548062940357018668454406549274630",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "email",
+      "destination": "app-logs",
+      "allowed": false,
+      "needle": "ada.27w7xk",
+      "excerpt": "…nfo\",\"msg\":\"newsletter opt-in\",\"userId\":\"u_9aec19ceb273\",\"body\":{\"name\":\"Ada Canary-7CAF\",\"email\":\"ada.27w7xk@canary.leakgate.test\",\"phone\":\"+44 7700 900857\",\"password\":\"Cnry!F53Z5JSE#26\",\"newsletter\":true},\"at\":\"2026-10-12T14:10:36.184Z\"} ",
+      "source": "/aws/lambda/leakgate-shop-leaky",
+      "at": 1791814236184,
+      "ref": "2026/10/12/[$LATEST]d76a319f607e47c5a2f6e2d1952fc9df/39958792724239153945650548062940357018668454406549274630",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "phone",
+      "destination": "app-logs",
+      "allowed": false,
+      "needle": "+44 7700 900857",
+      "excerpt": "…nfo\",\"msg\":\"newsletter opt-in\",\"userId\":\"u_9aec19ceb273\",\"body\":{\"name\":\"Ada Canary-7CAF\",\"email\":\"ada.27w7xk@canary.leakgate.test\",\"phone\":\"+44 7700 900857\",\"password\":\"Cnry!F53Z5JSE#26\",\"newsletter\":true},\"at\":\"2026-10-12T14:10:36.184Z\"} ",
+      "source": "/aws/lambda/leakgate-shop-leaky",
+      "at": 1791814236184,
+      "ref": "2026/10/12/[$LATEST]d76a319f607e47c5a2f6e2d1952fc9df/39958792724239153945650548062940357018668454406549274630",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "password",
+      "destination": "app-logs",
+      "allowed": false,
+      "needle": "F53Z5JSE",
+      "excerpt": "…nfo\",\"msg\":\"newsletter opt-in\",\"userId\":\"u_9aec19ceb273\",\"body\":{\"name\":\"Ada Canary-7CAF\",\"email\":\"ada.27w7xk@canary.leakgate.test\",\"phone\":\"+44 7700 900857\",\"password\":\"Cnry!F53Z5JSE#26\",\"newsletter\":true},\"at\":\"2026-10-12T14:10:36.184Z\"} ",
+      "source": "/aws/lambda/leakgate-shop-leaky",
+      "at": 1791814236184,
+      "ref": "2026/10/12/[$LATEST]d76a319f607e47c5a2f6e2d1952fc9df/39958792724239153945650548062940357018668454406549274630",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "name",
+      "destination": "error-tracker",
+      "allowed": false,
+      "needle": "Canary-7CAF",
+      "excerpt": "…\"message\":\"signup validation failed\",\"route\":\"/api/signup\",\"fields\":[\"password\"],\"request\":{\"name\":\"Ada Canary-7CAF\",\"email\":\"ada.27w7xk@canary.leakgate.test\",\"phone\":\"+44 7700 900857\",\"password\":\"F53Z5JSE\",\"newsletter\":true},\"env\":\"leaky\"}",
+      "source": "vendor:error-tracker",
+      "at": 1791814235116,
+      "ref": "1791814235116#fe0afe1a-b4bc-4256-8368-9bacd3977c82",
+      "journey": "signup-weak",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "email",
+      "destination": "error-tracker",
+      "allowed": false,
+      "needle": "ada.27w7xk",
+      "excerpt": "…\"message\":\"signup validation failed\",\"route\":\"/api/signup\",\"fields\":[\"password\"],\"request\":{\"name\":\"Ada Canary-7CAF\",\"email\":\"ada.27w7xk@canary.leakgate.test\",\"phone\":\"+44 7700 900857\",\"password\":\"F53Z5JSE\",\"newsletter\":true},\"env\":\"leaky\"}",
+      "source": "vendor:error-tracker",
+      "at": 1791814235116,
+      "ref": "1791814235116#fe0afe1a-b4bc-4256-8368-9bacd3977c82",
+      "journey": "signup-weak",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "phone",
+      "destination": "error-tracker",
+      "allowed": false,
+      "needle": "+44 7700 900857",
+      "excerpt": "…\"message\":\"signup validation failed\",\"route\":\"/api/signup\",\"fields\":[\"password\"],\"request\":{\"name\":\"Ada Canary-7CAF\",\"email\":\"ada.27w7xk@canary.leakgate.test\",\"phone\":\"+44 7700 900857\",\"password\":\"F53Z5JSE\",\"newsletter\":true},\"env\":\"leaky\"}",
+      "source": "vendor:error-tracker",
+      "at": 1791814235116,
+      "ref": "1791814235116#fe0afe1a-b4bc-4256-8368-9bacd3977c82",
+      "journey": "signup-weak",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "password",
+      "destination": "error-tracker",
+      "allowed": false,
+      "needle": "F53Z5JSE",
+      "excerpt": "…\"message\":\"signup validation failed\",\"route\":\"/api/signup\",\"fields\":[\"password\"],\"request\":{\"name\":\"Ada Canary-7CAF\",\"email\":\"ada.27w7xk@canary.leakgate.test\",\"phone\":\"+44 7700 900857\",\"password\":\"F53Z5JSE\",\"newsletter\":true},\"env\":\"leaky\"}",
+      "source": "vendor:error-tracker",
+      "at": 1791814235116,
+      "ref": "1791814235116#fe0afe1a-b4bc-4256-8368-9bacd3977c82",
+      "journey": "signup-weak",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "name",
+      "destination": "analytics",
+      "allowed": false,
+      "needle": "Canary-7CAF",
+      "excerpt": "{\"type\":\"identify\",\"userId\":\"u_9aec19ceb273\",\"traits\":{\"plan\":\"none\",\"newsletter\":true,\"name\":\"Ada Canary-7CAF\",\"email\":\"ada.27w7xk@canary.leakgate.test\",\"phone\":\"+44 7700 900857\"}}",
+      "source": "vendor:analytics",
+      "at": 1791814236268,
+      "ref": "1791814236268#dc35590b-7aba-45eb-9089-9286f2032766",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "email",
+      "destination": "analytics",
+      "allowed": false,
+      "needle": "ada.27w7xk",
+      "excerpt": "{\"type\":\"identify\",\"userId\":\"u_9aec19ceb273\",\"traits\":{\"plan\":\"none\",\"newsletter\":true,\"name\":\"Ada Canary-7CAF\",\"email\":\"ada.27w7xk@canary.leakgate.test\",\"phone\":\"+44 7700 900857\"}}",
+      "source": "vendor:analytics",
+      "at": 1791814236268,
+      "ref": "1791814236268#dc35590b-7aba-45eb-9089-9286f2032766",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "phone",
+      "destination": "analytics",
+      "allowed": false,
+      "needle": "+44 7700 900857",
+      "excerpt": "{\"type\":\"identify\",\"userId\":\"u_9aec19ceb273\",\"traits\":{\"plan\":\"none\",\"newsletter\":true,\"name\":\"Ada Canary-7CAF\",\"email\":\"ada.27w7xk@canary.leakgate.test\",\"phone\":\"+44 7700 900857\"}}",
+      "source": "vendor:analytics",
+      "at": 1791814236268,
+      "ref": "1791814236268#dc35590b-7aba-45eb-9089-9286f2032766",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "name",
+      "destination": "email-vendor",
+      "allowed": true,
+      "needle": "Canary-7CAF",
+      "excerpt": "{\"list\":\"newsletter\",\"to\":\"ada.27w7xk@canary.leakgate.test\",\"name\":\"Ada Canary-7CAF\"}",
+      "source": "vendor:email-vendor",
+      "at": 1791814236211,
+      "ref": "1791814236211#79a98c8c-3d6a-403a-ac18-b368b0d9e8de",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "email",
+      "destination": "email-vendor",
+      "allowed": true,
+      "needle": "ada.27w7xk",
+      "excerpt": "{\"list\":\"newsletter\",\"to\":\"ada.27w7xk@canary.leakgate.test\",\"name\":\"Ada Canary-7CAF\"}",
+      "source": "vendor:email-vendor",
+      "at": 1791814236211,
+      "ref": "1791814236211#79a98c8c-3d6a-403a-ac18-b368b0d9e8de",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "name",
+      "destination": "email-vendor",
+      "allowed": true,
+      "needle": "Canary-7CAF",
+      "excerpt": "{\"template\":\"welcome\",\"to\":\"ada.27w7xk@canary.leakgate.test\",\"name\":\"Ada Canary-7CAF\"}",
+      "source": "vendor:email-vendor",
+      "at": 1791814236319,
+      "ref": "1791814236319#74b28ce9-a2fc-4a04-8238-7ed06421d550",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "email",
+      "destination": "email-vendor",
+      "allowed": true,
+      "needle": "ada.27w7xk",
+      "excerpt": "{\"template\":\"welcome\",\"to\":\"ada.27w7xk@canary.leakgate.test\",\"name\":\"Ada Canary-7CAF\"}",
+      "source": "vendor:email-vendor",
+      "at": 1791814236319,
+      "ref": "1791814236319#74b28ce9-a2fc-4a04-8238-7ed06421d550",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "name",
+      "destination": "email-vendor",
+      "allowed": true,
+      "needle": "Canary-7CAF",
+      "excerpt": "{\"template\":\"receipt\",\"to\":\"ada.27w7xk@canary.leakgate.test\",\"name\":\"Ada Canary-7CAF\",\"orderId\":\"o_e18e273394\",\"amountPence\":1800}",
+      "source": "vendor:email-vendor",
+      "at": 1791814236636,
+      "ref": "1791814236636#849183f9-c380-47b2-b7fc-56ef390ecde6",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "email",
+      "destination": "email-vendor",
+      "allowed": true,
+      "needle": "ada.27w7xk",
+      "excerpt": "{\"template\":\"receipt\",\"to\":\"ada.27w7xk@canary.leakgate.test\",\"name\":\"Ada Canary-7CAF\",\"orderId\":\"o_e18e273394\",\"amountPence\":1800}",
+      "source": "vendor:email-vendor",
+      "at": 1791814236636,
+      "ref": "1791814236636#849183f9-c380-47b2-b7fc-56ef390ecde6",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "email",
+      "destination": "email-vendor",
+      "allowed": true,
+      "needle": "ada.27w7xk",
+      "excerpt": "{\"template\":\"support-ticket\",\"to\":\"help@greenstem.example\",\"replyTo\":\"ada.27w7xk@canary.leakgate.test\",\"ticketId\":\"t_1f812cda\",\"message\":\"Can I pause my plant box for one month while I travel?\"}",
+      "source": "vendor:email-vendor",
+      "at": 1791814236943,
+      "ref": "1791814236943#f913e5f4-3193-46e4-af17-e64ca4925868",
+      "journey": "checkout",
+      "file": "apps/shop/src/app/api/checkout/route.ts"
+    },
+    {
+      "field": "name",
+      "destination": "shipping-vendor",
+      "allowed": true,
+      "needle": "Canary-7CAF",
+      "excerpt": "{\"orderId\":\"o_e18e273394\",\"recipient\":\"Ada Canary-7CAF\",\"address\":\"Flat 78VJZ, 12 Linden Row, Bristol BS1 4DJ\",\"item\":\"Monthly fern box\"}",
+      "source": "vendor:shipping-vendor",
+      "at": 1791814236602,
+      "ref": "1791814236602#5210c451-ab25-429c-ada2-bead96fb63bd",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "address",
+      "destination": "shipping-vendor",
+      "allowed": true,
+      "needle": "Flat 78VJZ",
+      "excerpt": "{\"orderId\":\"o_e18e273394\",\"recipient\":\"Ada Canary-7CAF\",\"address\":\"Flat 78VJZ, 12 Linden Row, Bristol BS1 4DJ\",\"item\":\"Monthly fern box\"}",
+      "source": "vendor:shipping-vendor",
+      "at": 1791814236602,
+      "ref": "1791814236602#5210c451-ab25-429c-ada2-bead96fb63bd",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "name",
+      "destination": "database",
+      "allowed": true,
+      "needle": "Canary-7CAF",
+      "excerpt": "…b1600ac8f9f755c31bacef47b00927c20a59213d43237f383ebdf18b886c1b\",\"ttl\":1792419036,\"createdAt\":1791814236111,\"email\":\"ada.27w7xk@canary.leakgate.test\",\"name\":\"Ada Canary-7CAF\",\"phone\":\"+44 7700 900857\",\"env\":\"leaky\",\"userId\":\"u_9aec19ceb273\"}",
+      "source": "leakgate-shop-users/leaky",
+      "at": 1791814236111,
+      "ref": "u_9aec19ceb273",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "email",
+      "destination": "database",
+      "allowed": true,
+      "needle": "ada.27w7xk",
+      "excerpt": "…b1600ac8f9f755c31bacef47b00927c20a59213d43237f383ebdf18b886c1b\",\"ttl\":1792419036,\"createdAt\":1791814236111,\"email\":\"ada.27w7xk@canary.leakgate.test\",\"name\":\"Ada Canary-7CAF\",\"phone\":\"+44 7700 900857\",\"env\":\"leaky\",\"userId\":\"u_9aec19ceb273\"}",
+      "source": "leakgate-shop-users/leaky",
+      "at": 1791814236111,
+      "ref": "u_9aec19ceb273",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    },
+    {
+      "field": "phone",
+      "destination": "database",
+      "allowed": true,
+      "needle": "+44 7700 900857",
+      "excerpt": "…b1600ac8f9f755c31bacef47b00927c20a59213d43237f383ebdf18b886c1b\",\"ttl\":1792419036,\"createdAt\":1791814236111,\"email\":\"ada.27w7xk@canary.leakgate.test\",\"name\":\"Ada Canary-7CAF\",\"phone\":\"+44 7700 900857\",\"env\":\"leaky\",\"userId\":\"u_9aec19ceb273\"}",
+      "source": "leakgate-shop-users/leaky",
+      "at": 1791814236111,
+      "ref": "u_9aec19ceb273",
+      "journey": "signup",
+      "file": "apps/shop/src/app/api/signup/route.ts"
+    }
+  ],
+  "leaks": 11,
+  "status": "blocked"
+}

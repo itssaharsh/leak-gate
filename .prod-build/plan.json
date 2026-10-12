@@ -266,8 +266,16 @@
         "observe: console at 1440 and 390 shows the leaks and Run a live drill on the first screen"
       ],
       "rollback": "git revert",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "5196c35",
+      "started_after": 21,
+      "evidence": [
+        "E0022",
+        "E0023",
+        "E0024",
+        "E0025"
+      ]
     },
     {
       "id": "T08",
@@ -277,7 +285,8 @@
       "kind": "record",
       "size": "S",
       "deps": [
-        "T07"
+        "T07",
+        "T10"
       ],
       "writes": [],
       "acceptance": [
@@ -288,7 +297,7 @@
       ],
       "rollback": "n/a",
       "status": "todo",
-      "notes": "",
+      "notes": "Moved after T10: the hero path is the GitLab loop, so the backup take records it once it works.",
       "suite": false
     },
     {
