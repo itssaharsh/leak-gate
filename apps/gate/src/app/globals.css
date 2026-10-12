@@ -80,26 +80,26 @@ mark.tracer {
   box-shadow: inset 0 0 0 1px rgb(17 20 24 / 0.35);
 }
 
-/* The redaction bar slides across a value once the fix has removed it. */
+/* The redaction bar slides across a value once the fix has removed it. A background (not a
+   pseudo-element) so the bar covers every line fragment when the value wraps. */
 .redacted {
-  position: relative;
   color: transparent;
-}
-.redacted::after {
-  content: "";
-  position: absolute;
-  inset: 1px 0;
-  background: var(--ink);
-  transform-origin: left center;
+  background-image: linear-gradient(var(--ink), var(--ink));
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
   animation: redact 300ms var(--ease-in-out) both;
   animation-delay: var(--delay, 0ms);
 }
 @keyframes redact {
   from {
-    transform: scaleX(0);
+    background-size: 0% 100%;
+    color: var(--ink);
   }
   to {
-    transform: scaleX(1);
+    background-size: 100% 100%;
+    color: transparent;
   }
 }
 
@@ -136,7 +136,7 @@ mark.tracer {
   .edge {
     transition: opacity 150ms ease;
   }
-  .redacted::after,
+  .redacted,
   .drawer,
   .step-dot[data-state="running"] {
     animation: none;
