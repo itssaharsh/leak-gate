@@ -50,6 +50,7 @@ default:
     - export AWS_ROLE_ARN="$LEAKGATE_CI_ROLE" AWS_ROLE_SESSION_NAME="gitlab-$CI_JOB_ID"
     - export AWS_WEB_IDENTITY_TOKEN_FILE="$(mktemp)" && printf '%s' "$AWS_ID_TOKEN" > "$AWS_WEB_IDENTITY_TOKEN_FILE"
     - command -v zip >/dev/null || dnf install -y -q zip
+    - command -v aws >/dev/null || dnf install -y -q awscli-2
     - npm ci --no-audit --no-fund --prefer-offline
 
 .not-schedule:
