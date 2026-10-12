@@ -542,11 +542,14 @@
         "observe: final video under 180 s passes the video checks"
       ],
       "rollback": "n/a",
-      "status": "doing",
+      "status": "done",
       "notes": "",
       "suite": false,
       "base": "8fc155d",
-      "started_after": 45
+      "started_after": 45,
+      "evidence": [
+        "E0047"
+      ]
     },
     {
       "id": "T17",
