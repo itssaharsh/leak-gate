@@ -248,6 +248,9 @@ export function Console(props: ConsoleProps) {
           </div>
         </div>
       </section>
+      {!after && mode !== "live" && (
+        <p className="-mt-3 text-[13px] text-ink-muted">After fix appears once the GitLab Duo leak-fix flow has committed a fix to this merge request and the drill has passed.</p>
+      )}
       {live.state === "blocked" && <p className="-mt-3 text-[14px] text-warning">Next drill in {live.seconds} s. Drills are limited to keep this demo free.</p>}
       {live.state === "error" && <p className="-mt-3 text-[14px] text-danger">{live.message}</p>}
 
@@ -271,7 +274,7 @@ export function Console(props: ConsoleProps) {
         </div>
         <div className="flex flex-col gap-3 lg:col-span-4">
           <h2 className="text-[15px] font-semibold">
-            {mode === "after" ? "What the fix removed" : "Where her data went that it should not"}
+            {mode === "after" ? "What the fix removed" : "Each leak, with the line that proves it"}
           </h2>
           {mode === "after" && props.fixCommit && (
             <p className="text-[13px] text-ink-muted">

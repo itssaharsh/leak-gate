@@ -90,24 +90,24 @@ export function FlowMap({
           <span className="font-display text-[13px] font-extrabold whitespace-nowrap uppercase tracking-[0.08em]" style={{ fontVariationSettings: "'wdth' 100" }}>
             Synthetic customer
           </span>
-          <span className="font-mono text-[11px] whitespace-nowrap">run {canary?.code ?? "····"}</span>
+          <span className="font-mono text-[12px] whitespace-nowrap">run {canary?.code ?? "····"}</span>
         </div>
         <dl className="mt-3 flex flex-col gap-2">
           {FIELD_ORDER.map((f) => (
             <div key={f} ref={(n) => { fieldRefs.current[f] = n; }} className="flex flex-col">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.06em] opacity-80">{FIELD_LABEL[f]}</dt>
+              <dt className="text-[12px] font-semibold uppercase tracking-[0.06em] opacity-80">{FIELD_LABEL[f]}</dt>
               <dd className="truncate font-mono text-[13px] leading-5" title={value(f)}>
                 {value(f) || "—"}
               </dd>
             </div>
           ))}
         </dl>
-        <div aria-hidden className="mt-3 border-t border-[rgb(17_20_24/0.25)] pt-2 font-mono text-[10px] leading-4 tracking-[0.12em] break-all">
+        <div aria-hidden className="mt-3 border-t border-[rgb(17_20_24/0.25)] pt-2 font-mono text-[12px] leading-4 tracking-[0.12em] break-all">
           {`P<LKG${(canary?.name ?? "").toUpperCase().replace(/[^A-Z]/g, "<")}<<<<`.slice(0, 44)}
           <br />
           {`${canary?.code ?? "0000"}<<${(report?.runId ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "<")}`.slice(0, 44)}
         </div>
-        <p className="mt-2 text-[11px] opacity-80">Synthetic: every value is planted for this run.</p>
+        <p className="mt-2 text-[12px] opacity-80">Synthetic: every value is planted for this run.</p>
       </div>
 
       {/* Edge layer (desktop). */}
@@ -166,7 +166,7 @@ export function FlowMap({
               >
                 <span className="flex min-w-0 flex-col">
                   <span className="truncate text-[15px] font-semibold">{d.label}</span>
-                  <span className="text-[11px] text-ink-muted">{d.simulated ? "Simulated vendor" : d.kind === "internal" ? "Inside the shop" : "Vendor"}</span>
+                  <span className="text-[12px] text-ink-muted">{d.simulated ? "Simulated vendor" : d.kind === "internal" ? "Inside the shop" : "Vendor"}</span>
                 </span>
                 {leaking ? (
                   <span className="tabular flex h-8 min-w-8 items-center justify-center rounded-sm bg-danger px-2 font-display text-lg font-extrabold text-white" aria-label={`${d.leaks} leaked fields`}>
