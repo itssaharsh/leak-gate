@@ -1,0 +1,39 @@
+# Where each customer field may go. Leak Gate treats anything else as a leak.
+# Changing this file changes what the merge gate allows, so it needs a privacy review.
+
+destinations:
+  database:
+    label: Shop database
+    kind: internal
+  app-logs:
+    label: App logs
+    kind: internal
+  error-tracker:
+    label: Error tracker
+    kind: vendor
+    simulated: true
+  analytics:
+    label: Analytics
+    kind: vendor
+    simulated: true
+  email-vendor:
+    label: Email vendor
+    kind: vendor
+    simulated: true
+  shipping-vendor:
+    label: Shipping vendor
+    kind: vendor
+    simulated: true
+
+fields:
+  name:
+    allowed: [database, email-vendor, shipping-vendor]
+  email:
+    allowed: [database, email-vendor]
+  phone:
+    allowed: [database]
+  # Passwords are stored only as a salted hash, so the planted password may appear nowhere.
+  password:
+    allowed: []
+  address:
+    allowed: [database, shipping-vendor]

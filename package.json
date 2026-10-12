@@ -1,0 +1,19 @@
+{
+  "name": "leak-gate",
+  "private": true,
+  "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w apps/shop && npm run build -w apps/gate",
+    "test": "npm test -w packages/drill",
+    "typecheck": "npm run typecheck -w packages/drill",
+    "lint": "npm run lint -w apps/shop && npm run lint -w apps/gate",
+    "drill": "npm run drill -w packages/drill --"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
