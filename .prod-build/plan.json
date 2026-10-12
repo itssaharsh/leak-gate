@@ -324,10 +324,15 @@
         "observe: merge request pipeline fails on the leaky branch with findings in the merge request"
       ],
       "rollback": "git revert",
-      "status": "doing",
+      "status": "done",
       "notes": "Needs the GitLab project (approval pending)",
       "base": "aa91085",
-      "started_after": 25
+      "started_after": 25,
+      "evidence": [
+        "E0026",
+        "E0028",
+        "E0029"
+      ]
     },
     {
       "id": "T10",
@@ -348,8 +353,15 @@
         "observe: flow session commits a fix and the rerun drill passes"
       ],
       "rollback": "disable the trigger",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "c06075f",
+      "started_after": 29,
+      "evidence": [
+        "E0030",
+        "E0031",
+        "E0032"
+      ]
     },
     {
       "id": "T11",
