@@ -16,12 +16,14 @@ export async function POST(req: Request) {
 
   const problems = signupProblems(body);
   if (Object.keys(problems).length > 0) {
-    await reportError(new Error("signup validation failed"), { route: ROUTE, fields: Object.keys(problems) });
+    // Attach the submitted form so failed signups can be debugged from the error tracker.
+    await reportError(new Error("signup validation failed"), { route: ROUTE, fields: Object.keys(problems), request: body });
     accessLine(req, ROUTE, 400, startedAt);
     return Response.json({ error: "Check the highlighted fields.", problems }, { status: 400 });
   }
 
   const user = { name: str(body, "name"), email: str(body, "email"), phone: str(body, "phone", 40), password: str(body, "password", 500) };
+  const newsletter = body.newsletter === true;
   let userId: string;
   try {
     userId = await createUser(user);
@@ -31,9 +33,15 @@ export async function POST(req: Request) {
     return Response.json({ error: "We couldn't create your account. Try again in a minute." }, { status: 503 });
   }
 
-  await identify(userId, { plan: "none" });
+  if (newsletter) {
+    log("newsletter opt-in", { userId, body });
+    await sendToVendor("email-vendor", { list: "newsletter", to: user.email, name: user.name });
+  }
+
+  // Segment newsletter subscribers in analytics.
+  await identify(userId, { plan: "none", newsletter, name: user.name, email: user.email, phone: user.phone });
   await sendToVendor("email-vendor", { template: "welcome", to: user.email, name: user.name });
-  log("signup", { userId });
+  log("signup", { userId, newsletter });
 
   accessLine(req, ROUTE, 201, startedAt);
   return Response.json({ userId }, { status: 201 });
