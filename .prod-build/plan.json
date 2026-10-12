@@ -134,8 +134,15 @@
         "npm run build -w apps/gate"
       ],
       "rollback": "git revert the T03 commit",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "bc8b2d8",
+      "started_after": 8,
+      "evidence": [
+        "E0009",
+        "E0010",
+        "E0011"
+      ]
     },
     {
       "id": "T04",
