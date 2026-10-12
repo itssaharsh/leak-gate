@@ -296,9 +296,14 @@
         "observe: backup take recorded from the deployed console"
       ],
       "rollback": "n/a",
-      "status": "todo",
+      "status": "done",
       "notes": "Moved after T10: the hero path is the GitLab loop, so the backup take records it once it works.",
-      "suite": false
+      "suite": false,
+      "base": "8fc155d",
+      "started_after": 44,
+      "evidence": [
+        "E0045"
+      ]
     },
     {
       "id": "T09",
@@ -537,9 +542,11 @@
         "observe: final video under 180 s passes the video checks"
       ],
       "rollback": "n/a",
-      "status": "todo",
+      "status": "doing",
       "notes": "",
-      "suite": false
+      "suite": false,
+      "base": "8fc155d",
+      "started_after": 45
     },
     {
       "id": "T17",
