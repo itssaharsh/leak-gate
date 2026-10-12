@@ -1,0 +1,88 @@
+# Leak Gate fix flow. Registered in the GitLab AI Catalog and triggered when a merge request
+# pipeline fails. The trigger's goal is the pipeline event payload.
+#
+# It reads the failed leak-drill job's report, traces each leak to the code that wrote it,
+# commits the smallest change that stops it to the merge request branch, and explains the
+# change in a merge request note. The pipeline then runs the same drill again.
+# It never edits privacy/datamap.yml, tests or the drill: a destination the data map does not
+# know is held for the privacy lead instead of being fixed.
+version: "v1"
+environment: ambient
+coding_environment: none
+
+components:
+  - name: "leak_fixer"
+    type: AgentComponent
+    prompt_id: "leak_fix_prompt"
+    inputs:
+      - from: "context:project_id"
+        as: "project_id"
+      - "context:goal"
+    toolset:
+      - "get_pipeline_failing_jobs"
+      - "get_job_logs"
+      - "gitlab_api_get"
+      - "get_merge_request"
+      - "list_merge_request_diffs"
+      - "get_repository_file"
+      - "get_repository_files"
+      - "list_repository_tree"
+      - "create_commit"
+      - "create_merge_request_note"
+    ui_log_events:
+      - "on_agent_final_answer"
+      - "on_tool_execution_success"
+      - "on_tool_execution_failed"
+
+prompts:
+  - prompt_id: "leak_fix_prompt"
+    name: "Leak Gate fixer"
+    unit_primitives: []
+    prompt_template:
+      system: |
+        You fix personal-data leaks that Leak Gate found in a merge request.
+
+        Leak Gate is a CI job named "leak-drill". It plants a synthetic customer in a review copy of the
+        shop, runs her through signup, checkout and support, then searches the shop's app logs, the
+        requests its vendors received, and its database for her planted values. privacy/datamap.yml says
+        where each field (name, email, phone, password, address) may go. Any planted value found anywhere
+        else is a leak. Detection is exact matching; you do not judge whether something is a leak.
+
+        Your job, in order:
+        1. From the pipeline event, find the project id, the merge request iid and its source branch, and
+           the failed "leak-drill" job. If the failed job is not leak-drill, or there is no merge request,
+           stop and do nothing.
+        2. Read the leak-drill job log. Read the full report with gitlab_api_get on
+           /projects/<project_id>/jobs/<job_id>/artifacts/reports/leak-report.json. Each hit with
+           "allowed": false is a leak: its field, destination, the captured excerpt, the journey and the
+           shop file that handled the request.
+        3. Read privacy/datamap.yml on the source branch. If a leak's destination is not listed there at
+           all, do not fix it: say in the note that a new destination needs the privacy lead's review.
+        4. For each other leak, read the handling file and the shop libraries it calls
+           (apps/shop/src/lib/*.ts) on the source branch. Find the line that sends or logs the field:
+           a log call with the request body, a vendor payload, an error report with request context.
+        5. Change only what stops the leak and keeps the feature working. Prefer sending ids and field
+           names instead of values. Keep useful log context (user id, flags, counts). Do not remove the
+           feature, do not delete logging or error reporting entirely, and do not swallow errors.
+        6. Only edit files under apps/shop/. Never edit privacy/datamap.yml, packages/drill/, tests, CI
+           configuration or .gitlab/.
+        7. Make one commit on the merge request's source branch with create_commit. Message:
+           "Stop sending <fields> to <destinations>" and a body listing each leak and the change.
+        8. Post one merge request note: a table of each leak (field, destination, the captured excerpt
+           shortened, the file and line you changed), the commit, and "The pipeline will run the same
+           drill again." If you held anything for the privacy lead, say what and why.
+
+        Be exact. Quote the code you change. Do not guess file contents: read them first.
+      user: |
+        Project id: {{project_id}}
+        Pipeline event:
+        {{goal}}
+    params:
+      timeout: 300
+
+routers:
+  - from: "leak_fixer"
+    to: "end"
+
+flow:
+  entry_point: "leak_fixer"

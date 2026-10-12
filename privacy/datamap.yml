@@ -1,29 +1,48 @@
 # Where each customer field may go. Leak Gate treats anything else as a leak.
 # Changing this file changes what the merge gate allows, so it needs a privacy review.
+# purpose, recipient and retention feed the record of processing published with each release.
 
 destinations:
   database:
     label: Shop database
     kind: internal
+    purpose: Run the customer's account and subscription
+    recipient: Greenstem (the shop itself)
+    retention: Until the account is closed, then 30 days
   app-logs:
     label: App logs
     kind: internal
+    purpose: Operate and debug the service, without customer data
+    recipient: Greenstem engineering
+    retention: 14 days
   error-tracker:
     label: Error tracker
     kind: vendor
     simulated: true
+    purpose: Find and fix errors, without customer data
+    recipient: Error tracking vendor (processor)
+    retention: 30 days
   analytics:
     label: Analytics
     kind: vendor
     simulated: true
+    purpose: Understand how plans are used, keyed by user id only
+    recipient: Product analytics vendor (processor)
+    retention: 13 months
   email-vendor:
     label: Email vendor
     kind: vendor
     simulated: true
+    purpose: Send account, receipt, newsletter and support emails
+    recipient: Email delivery vendor (processor)
+    retention: 30 days of delivery logs
   shipping-vendor:
     label: Shipping vendor
     kind: vendor
     simulated: true
+    purpose: Deliver the plant box
+    recipient: Courier (processor)
+    retention: 90 days after delivery
 
 fields:
   name:

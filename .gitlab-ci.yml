@@ -1,0 +1,231 @@
+# Leak Gate pipeline.
+# Merge requests: test, build, package, deploy a review shop, drill it. A leak fails the drill job,
+# which publishes JUnit and security reports and triggers the Duo leak-fix flow.
+# main: test, build, package, then a person runs the production deploy; production is drilled and
+# the release carries the record of processing. Schedules drill production every hour.
+#
+# CI/CD variables (Settings > CI/CD > Variables): LEAKGATE_CI_ROLE (AWS role for OIDC), GATE_URL,
+# VENDOR_KEY (masked), DRILL_TOKEN (masked), PRODUCTION_URL, LEAKGATE_BOT_TOKEN (masked; opens incident issues).
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+stages: [test, build, package, review, drill, deploy, release, monitor]
+
+include:
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+variables:
+  AWS_REGION: us-east-1
+  AWS_IMAGE: public.ecr.aws/sam/build-nodejs22.x:latest
+  REVIEW_FN: leakgate-shop-mr-$CI_MERGE_REQUEST_IID
+  PROD_FN: leakgate-shop-main
+  npm_config_cache: $CI_PROJECT_DIR/.npm
+
+default:
+  interruptible: true
+
+.npm:
+  cache:
+    key:
+      files: [package-lock.json]
+    paths: [.npm/]
+    policy: pull-push
+
+# Jobs that talk to AWS assume LEAKGATE_CI_ROLE with this job's GitLab ID token: no AWS keys in GitLab.
+.aws:
+  extends: .npm
+  image: $AWS_IMAGE
+  id_tokens:
+    AWS_ID_TOKEN:
+      aud: sts.amazonaws.com
+  before_script:
+    - export AWS_ROLE_ARN="$LEAKGATE_CI_ROLE" AWS_ROLE_SESSION_NAME="gitlab-$CI_JOB_ID"
+    - export AWS_WEB_IDENTITY_TOKEN_FILE="$(mktemp)" && printf '%s' "$AWS_ID_TOKEN" > "$AWS_WEB_IDENTITY_TOKEN_FILE"
+    - command -v zip >/dev/null || dnf install -y -q zip
+    - npm ci --no-audit --no-fund --prefer-offline
+
+.not-schedule:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - when: on_success
+
+unit-tests:
+  stage: test
+  extends: [.npm, .not-schedule]
+  image: node:22
+  script:
+    - npm ci --no-audit --no-fund --prefer-offline
+    - npx vitest run --root packages/drill --reporter=default --reporter=junit --outputFile=$CI_PROJECT_DIR/unit-junit.xml
+    - npm run typecheck
+    - npm run lint
+  artifacts:
+    when: always
+    reports:
+      junit: unit-junit.xml
+
+sast:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - when: on_success
+
+secret_detection:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - when: on_success
+
+build-shop:
+  stage: build
+  extends: [.npm, .not-schedule]
+  image: $AWS_IMAGE
+  script:
+    - command -v zip >/dev/null || dnf install -y -q zip
+    - npm ci --no-audit --no-fund --prefer-offline
+    - npm run build -w apps/shop
+    - bash infra/aws/package.sh shop shop.zip
+  artifacts:
+    paths: [shop.zip]
+    expire_in: 7 days
+
+package-shop:
+  stage: package
+  extends: .not-schedule
+  image: curlimages/curl:latest
+  needs: [build-shop]
+  script:
+    - VERSION="$(date -u +%Y.%m.%d)-${CI_COMMIT_SHORT_SHA}"
+    - 'curl --fail --silent --show-error --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file shop.zip "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/shop/${VERSION}/shop.zip"'
+    - echo "Published shop ${VERSION} to the package registry"
+
+review-shop:
+  stage: review
+  extends: .aws
+  needs: [build-shop]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - URL="$(ZIP_FILE=shop.zip bash infra/aws/deploy.sh shop "$REVIEW_FN" LEAKGATE_ENV="mr-$CI_MERGE_REQUEST_IID" USERS_TABLE=leakgate-shop-users VENDOR_BASE_URL="$GATE_URL" VENDOR_KEY="$VENDOR_KEY" | tail -1)"
+    - echo "REVIEW_URL=$URL" > review.env
+    - echo "Review shop for !$CI_MERGE_REQUEST_IID at $URL"
+  artifacts:
+    reports:
+      dotenv: review.env
+  environment:
+    name: review/$CI_MERGE_REQUEST_IID
+    url: $REVIEW_URL
+    on_stop: stop-review
+    auto_stop_in: 3 days
+
+stop-review:
+  stage: review
+  extends: .aws
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
+      allow_failure: true
+  script:
+    - bash infra/aws/destroy-review.sh "$REVIEW_FN"
+  environment:
+    name: review/$CI_MERGE_REQUEST_IID
+    action: stop
+
+# The gate: plants a synthetic customer in the review shop and fails on any leak.
+leak-drill:
+  stage: drill
+  extends: .aws
+  needs: [review-shop]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - >
+      npx tsx packages/drill/src/cli.ts
+      --shop-url "$REVIEW_URL" --env "mr-$CI_MERGE_REQUEST_IID"
+      --log-group "/aws/lambda/$REVIEW_FN" --out reports
+      --post "$GATE_URL" --mr "$CI_MERGE_REQUEST_IID" --label "$CI_MERGE_REQUEST_TITLE"
+  artifacts:
+    when: always
+    expose_as: Leak report
+    paths: [reports/]
+    reports:
+      junit: reports/junit.xml
+      sast: reports/gl-sast-report.json
+    expire_in: 30 days
+
+# Supervised: the agents clear the gates; a person approves the production deploy.
+deploy-production:
+  stage: deploy
+  extends: .aws
+  needs: [build-shop, unit-tests]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+      when: manual
+  allow_failure: false
+  script:
+    - URL="$(ZIP_FILE=shop.zip bash infra/aws/deploy.sh shop "$PROD_FN" LEAKGATE_ENV=main USERS_TABLE=leakgate-shop-users VENDOR_BASE_URL="$GATE_URL" VENDOR_KEY="$VENDOR_KEY" | tail -1)"
+    - echo "PROD_URL=$URL" > prod.env
+  artifacts:
+    reports:
+      dotenv: prod.env
+  environment:
+    name: production
+    url: $PROD_URL
+
+production-drill:
+  stage: release
+  extends: .aws
+  needs: [deploy-production]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+  script:
+    - npx tsx packages/drill/src/cli.ts --shop-url "$PROD_URL" --env main --log-group "/aws/lambda/$PROD_FN" --out reports --post "$GATE_URL" --label "Production after release"
+    - npx tsx packages/drill/src/ropa.ts privacy/datamap.yml record-of-processing.md reports/leak-report.json
+  artifacts:
+    when: always
+    paths: [reports/, record-of-processing.md]
+    reports:
+      junit: reports/junit.xml
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  needs: [production-drill]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+  script:
+    - echo "Releasing $CI_COMMIT_SHORT_SHA with its record of processing"
+  release:
+    name: "Release $CI_PIPELINE_IID"
+    tag_name: "v1.0.$CI_PIPELINE_IID"
+    ref: $CI_COMMIT_SHA
+    description: ./record-of-processing.md
+    assets:
+      links:
+        - name: Production drill report
+          url: "$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_SHA/raw/reports/leak-report.json?job=production-drill"
+
+# Monitor: drill production every hour; a leak opens an issue with the evidence.
+production-canary:
+  stage: monitor
+  extends: .aws
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  script:
+    - set +e
+    - npx tsx packages/drill/src/cli.ts --shop-url "$PRODUCTION_URL" --env main --log-group "/aws/lambda/$PROD_FN" --out reports --post "$GATE_URL" --label "Hourly production canary"
+    - CODE=$?
+    - set -e
+    - if [ "$CODE" = "1" ]; then bash scripts/open-incident.sh reports/summary.md; fi
+    - exit $CODE
+  artifacts:
+    when: always
+    paths: [reports/]
