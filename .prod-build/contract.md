@@ -68,6 +68,9 @@ AC-5: WHEN a visitor opens the console with no input THE SYSTEM SHALL show the f
 AC-6: WHEN a visitor runs a live drill THE SYSTEM SHALL stream named steps and show the result within 45 s, or say which step failed. Verify: observed on the live URL.
 AC-7: WHEN the vendor endpoint receives a request without the shared key THE SYSTEM SHALL answer 401 and store nothing. Verify: smoke.
 AC-8: WHEN live drills arrive faster than one per 20 s THE SYSTEM SHALL refuse with the seconds left. Verify: smoke.
+AC-9: WHEN a judge opens the GitLab project THE SYSTEM SHALL show an MIT license in the About section and a README whose first screen has the one-line description, a screenshot, the video link and the live link. Verify: observed on gitlab.com.
+AC-10: WHEN the final video is checked THE SYSTEM SHALL be under 180 s, at least 30 fps, with no third-party trademarks or music. Verify: product-demo-video QC.
+AC-11: WHEN the submission is checked THE SYSTEM SHALL pass pb.py window and pb.py submit check. Verify: pb.py output.
 
 ## 10. Assumptions
 A-1 [reversible]: CloudWatch ingestion completes within 30 s for Lambda logs - validate in the first live run.
