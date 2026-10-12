@@ -383,8 +383,15 @@
         "observe: scheduled pipeline ran against production"
       ],
       "rollback": "delete the schedule",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "758cf12",
+      "started_after": 32,
+      "evidence": [
+        "E0033",
+        "E0034",
+        "E0035"
+      ]
     },
     {
       "id": "T12",
@@ -408,9 +415,14 @@
         "observe: LICENSE detected in the GitLab About section"
       ],
       "rollback": "git revert",
-      "status": "todo",
+      "status": "done",
       "notes": "",
-      "suite": false
+      "suite": false,
+      "base": "758cf12",
+      "started_after": 35,
+      "evidence": [
+        "E0036"
+      ]
     },
     {
       "id": "T13",
@@ -434,8 +446,16 @@
         "observe: foldcheck passes at 1440 and 390 on the deployed URL"
       ],
       "rollback": "git revert",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "758cf12",
+      "started_after": 36,
+      "evidence": [
+        "E0037",
+        "E0038",
+        "E0039",
+        "E0040"
+      ]
     },
     {
       "id": "T14",

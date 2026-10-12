@@ -9,7 +9,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const sp = await searchParams;
   const forced = typeof sp.state === "string" ? sp.state : undefined;
   const { before, after } = await featuredRuns();
-  const builds = shopBuilds().map((b) => ({ id: b.id, label: b.id === "leaky" ? "Leaky build" : "Main build" }));
+  const builds = shopBuilds().map((b) => ({ id: b.id, label: b.id === "leaky" ? "Leaky build (before the fix)" : "Main build (fixed)" }));
   const repo = config.gitlabProjectUrl || undefined;
   const mrRef = process.env.FEATURED_MR ? `!${process.env.FEATURED_MR}` : "newsletter-optin";
   const mrUrl = repo && process.env.FEATURED_MR ? `${repo.replace(/\/$/, "")}/-/merge_requests/${process.env.FEATURED_MR}` : undefined;
