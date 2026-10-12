@@ -481,8 +481,15 @@
         "observe: no secrets in history or client bundles"
       ],
       "rollback": "git revert",
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "base": "4642af2",
+      "started_after": 40,
+      "evidence": [
+        "E0041",
+        "E0042",
+        "E0043"
+      ]
     },
     {
       "id": "T15",
@@ -503,9 +510,14 @@
         "observe: three clean demo runs on the live URL at 1440 and 390"
       ],
       "rollback": "n/a",
-      "status": "todo",
+      "status": "done",
       "notes": "",
-      "suite": false
+      "suite": false,
+      "base": "4642af2",
+      "started_after": 43,
+      "evidence": [
+        "E0044"
+      ]
     },
     {
       "id": "T16",
