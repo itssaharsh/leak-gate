@@ -214,9 +214,13 @@ production-canary:
   extends: .aws
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
+  variables:
+    CANARY_URL: $PRODUCTION_URL
+    CANARY_ENV: main
+    CANARY_FN: leakgate-shop-main
   script:
     - set +e
-    - npx tsx packages/drill/src/cli.ts --shop-url "$PRODUCTION_URL" --env main --log-group "/aws/lambda/$PROD_FN" --out reports --post "$GATE_URL" --label "Hourly production canary"
+    - npx tsx packages/drill/src/cli.ts --shop-url "$CANARY_URL" --env "$CANARY_ENV" --log-group "/aws/lambda/$CANARY_FN" --out reports --post "$GATE_URL" --label "Hourly production canary"
     - CODE=$?
     - set -e
     - if [ "$CODE" = "1" ]; then bash scripts/open-incident.sh reports/summary.md; fi
