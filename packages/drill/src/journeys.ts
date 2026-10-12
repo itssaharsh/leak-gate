@@ -20,7 +20,9 @@ export const JOURNEYS: JourneySpec[] = [
     route: "/api/signup",
     file: "apps/shop/src/app/api/signup/route.ts",
     expect: [400],
-    body: (c) => ({ name: c.name, email: c.email, phone: c.phone, password: c.password.slice(0, 6), newsletter: true }),
+    // An 8-character first try: too short for the shop's rule, and it carries the password's unique tag,
+    // so a password leaked through the error path is still found.
+    body: (c) => ({ name: c.name, email: c.email, phone: c.phone, password: c.markers.find((m) => m.field === "password")!.needles[0], newsletter: true }),
   },
   {
     id: "signup",

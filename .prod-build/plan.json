@@ -168,8 +168,10 @@
         "bash infra/aws/smoke.sh"
       ],
       "rollback": "infra/aws/teardown.sh removes the functions and tables",
-      "status": "todo",
-      "notes": ""
+      "status": "doing",
+      "notes": "",
+      "base": "53c5352",
+      "started_after": 11
     },
     {
       "id": "T05",
