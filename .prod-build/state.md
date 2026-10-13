@@ -2,8 +2,9 @@
 Updated: 2026-10-13 | mode: hackathon | channel: direct | phase: submission material ready; waiting on the YouTube upload and the Devpost form
 
 ## Now
-- Tasks: T01-T16 and T18 (plain-language explainer under the map) done; T17 (submission) waits on the YouTube link and the Devpost form, both the user's.
-- Last good deploy: gate + shop-main + shop-leaky on AWS. GitLab main at 480677a1 deployed to production by the manual job (pipeline 2939776831), release v1.0.10.
+- Tasks: T01-T16, T18 (plain-language explainer) and T19 (hold destinations the data map has never seen) done; T17 (submission) waits on the YouTube link and the Devpost form, both the user's.
+- Last good deploy: gate (console with CASES for !1 and !2) + shop-main + shop-leaky on AWS. GitLab main at f8e4f5cc (merge of !2) deployed to production by the manual job (pipeline 2941602907), release v1.0.47 with the CRM in the record of processing.
+- Video v6 (172 s, includes !2) is final: ../video/build/final.mp4, copied to ../submission/leak-gate-demo.mp4.
 
 ## What worked (with evidence IDs)
 - Drill core, 18 unit tests (E0019-E0020); shop and gate build and lint (E0005-E0006, E0022)
