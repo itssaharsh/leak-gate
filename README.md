@@ -4,6 +4,8 @@
 
 Live console, no sign-in: https://zrroxvjikxowvxwxfqu42ev4ni0ovpbq.lambda-url.us-east-1.on.aws/
 
+Demo video (2:52): https://youtu.be/E1nH8bSQxcc
+
 ![Merge request 1 on the console: Before fix shows 11 leaks, After fix shows 0](docs/demo.gif)
 
 ![The console: a synthetic customer's data reached app logs, the error tracker and analytics](docs/console.png)
