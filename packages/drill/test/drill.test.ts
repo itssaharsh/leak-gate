@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { cleanFirstName, findMarkers, makeCanary } from "../src/canary";
-import { countLeaks, matchCaptures, summarize } from "../src/compare";
+import { countLeaks, matchCaptures, onShopClock, summarize } from "../src/compare";
 import { isAllowed, parseDataMap } from "../src/datamap";
 import { aroundNeedle, toGitLabSecurityReport, toJUnit, toMarkdown } from "../src/report";
-import { anyTermPattern, captureSortKey, seenVendorsKey, VENDOR_SLUG } from "../src/sinks";
+import { anyTermPattern, captureSortKey, parseAccessLines, seenVendorsKey, VENDOR_SLUG } from "../src/sinks";
 import type { Capture, DrillReport, JourneyResult } from "../src/types";
 
 const datamap = parseDataMap(readFileSync(new URL("../../../privacy/datamap.yml", import.meta.url), "utf8"));
@@ -162,6 +162,49 @@ describe("reports", () => {
     const w = aroundNeedle(text, "needle", 40);
     expect(w).toContain("NEEDLE");
     expect(w.startsWith("…") && w.endsWith("…")).toBe(true);
+  });
+});
+
+describe("journey attribution across clocks", () => {
+  // Merge request !2: the CI runner's clock ran behind AWS, so a CRM call made during signup
+  // landed inside checkout's runner-clock window and the report blamed the checkout route.
+  const c = makeCanary("Ada");
+  const now = 1_700_000_000_000;
+  const skew = 400;
+  const runner: JourneyResult[] = [
+    { id: "signup", label: "Signing up", route: "/api/signup", file: "apps/shop/src/app/api/signup/route.ts", status: 201, ok: true, startedAt: now, endedAt: now + 300 },
+    { id: "checkout", label: "Checking out", route: "/api/checkout", file: "apps/shop/src/app/api/checkout/route.ts", status: 201, ok: true, startedAt: now + 310, endedAt: now + 600 },
+  ];
+  const lines = [
+    { message: JSON.stringify({ level: "info", msg: "drill-request", run: c.runId, path: "/api/signup", status: 201, ms: 270 }), timestamp: now + skew + 290 },
+    { message: `2026-10-13T08:27:30Z\tINFO\t${JSON.stringify({ msg: "drill-request", path: "/api/checkout", status: 201, ms: 270 })}`, timestamp: now + skew + 590 },
+    { message: JSON.stringify({ msg: "request", path: "/api/signup", ms: 10 }), timestamp: now + skew + 700 },
+  ];
+  const crm: Capture = { destination: "crm", source: "vendor:crm", text: JSON.stringify({ email: c.email }), at: now + skew + 250 };
+
+  it("reads the shop's access lines as windows on the AWS clock", () => {
+    expect(parseAccessLines(lines)).toEqual([
+      { path: "/api/signup", start: now + skew + 20, end: now + skew + 290 },
+      { path: "/api/checkout", start: now + skew + 320, end: now + skew + 590 },
+    ]);
+  });
+
+  it("blames the journey that was running on the shop's clock", () => {
+    const [hit] = matchCaptures([crm], c, datamap, onShopClock(runner, parseAccessLines(lines)));
+    expect(hit.journey).toBe("signup");
+    expect(hit.file).toBe("apps/shop/src/app/api/signup/route.ts");
+  });
+
+  it("matches repeated routes in order", () => {
+    const twice: JourneyResult[] = [{ ...runner[0], id: "signup-weak" }, runner[0]];
+    const w = [
+      { path: "/api/signup", start: 10, end: 20 },
+      { path: "/api/signup", start: 30, end: 40 },
+    ];
+    expect(onShopClock(twice, w).map((j) => [j.id, j.startedAt])).toEqual([
+      ["signup-weak", 10],
+      ["signup", 30],
+    ]);
   });
 });
 

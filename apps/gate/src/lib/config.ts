@@ -31,6 +31,33 @@ export function shopBuilds(): ShopBuild[] {
   return builds;
 }
 
+/** One step of what happened on a featured merge request, linked to the GitLab object that proves it. */
+export interface StoryStep {
+  text: string;
+  href?: string;
+  /** "hold": the flow stopped for a person; "person": a person decided; "fix": the flow changed code; "pass": the drill passed. */
+  kind?: "fail" | "hold" | "person" | "fix" | "pass";
+}
+
+export interface FeaturedCase {
+  mr: string;
+  title: string;
+  /** Short label for the switcher, e.g. "Newsletter opt-in: fixed by the flow". */
+  label: string;
+  story: StoryStep[];
+}
+
+/** Featured merge requests from CASES (JSON), or the single FEATURED_MR. */
+export function featuredCases(): FeaturedCase[] {
+  try {
+    const parsed = JSON.parse(process.env.CASES ?? "[]");
+    if (Array.isArray(parsed) && parsed.length) return parsed as FeaturedCase[];
+  } catch {
+    // fall through to FEATURED_MR
+  }
+  return config.featuredMr ? [{ mr: config.featuredMr, title: process.env.FEATURED_MR_TITLE ?? "Merge request", label: "", story: [] }] : [];
+}
+
 let cached: DataMap | null = null;
 export function dataMap(): DataMap {
   if (!cached) cached = parseDataMap(readFileSync(path.join(process.cwd(), "../../privacy/datamap.yml"), "utf8"));

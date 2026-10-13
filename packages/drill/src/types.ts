@@ -32,6 +32,13 @@ export interface Hit {
   unknownDestination?: boolean;
 }
 
+/** One drill request as the shop logged it, on the shop's (AWS) clock. */
+export interface AccessWindow {
+  path: string;
+  start: number;
+  end: number;
+}
+
 export interface JourneyResult {
   id: string;
   label: string;

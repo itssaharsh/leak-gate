@@ -1,7 +1,7 @@
 import { CloudWatchLogsClient, FilterLogEventsCommand } from "@aws-sdk/client-cloudwatch-logs";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, QueryCommand } from "@aws-sdk/lib-dynamodb";
-import type { Capture, SinkReader } from "./types";
+import type { AccessWindow, Capture, SinkReader } from "./types";
 
 export const VENDORS = ["error-tracker", "analytics", "email-vendor", "shipping-vendor"] as const;
 export type Vendor = (typeof VENDORS)[number];
@@ -75,9 +75,28 @@ export function cloudWatchReader(cfg: AwsSinkConfig, needles: string[]): SinkRea
   };
 }
 
+/** The shop's "drill-request" access lines as time windows. A runtime may put a prefix before the JSON. */
+export function parseAccessLines(events: { message?: string; timestamp?: number }[]): AccessWindow[] {
+  const out: AccessWindow[] = [];
+  for (const e of events) {
+    const text = e.message ?? "";
+    const i = text.indexOf("{");
+    if (i < 0) continue;
+    try {
+      const o = JSON.parse(text.slice(i)) as { msg?: string; path?: unknown; ms?: unknown };
+      if (o.msg !== "drill-request" || typeof o.path !== "string") continue;
+      const end = e.timestamp ?? 0;
+      out.push({ path: o.path, start: end - (Number(o.ms) || 0), end });
+    } catch {
+      // not a JSON line
+    }
+  }
+  return out.sort((a, b) => a.end - b.end);
+}
+
 /**
- * Waits until the shop's access lines for this run have reached CloudWatch,
- * so the search does not run before the logs it needs exist.
+ * Waits until the shop's access lines for this run have reached CloudWatch, so the search does
+ * not run before the logs it needs exist. Returns them as windows on the shop's clock.
  */
 export async function waitForAccessLines(
   cfg: AwsSinkConfig,
@@ -85,10 +104,10 @@ export async function waitForAccessLines(
   expected: number,
   window: { start: number },
   timeoutMs = 30_000,
-): Promise<number> {
+): Promise<AccessWindow[]> {
   const client = new CloudWatchLogsClient({ region: cfg.region });
   const deadline = Date.now() + timeoutMs;
-  let seen = 0;
+  let seen: AccessWindow[] = [];
   while (Date.now() < deadline) {
     const res = await client.send(
       new FilterLogEventsCommand({
@@ -97,8 +116,8 @@ export async function waitForAccessLines(
         filterPattern: `"drill-request" "${runId}"`,
       }),
     );
-    seen = res.events?.length ?? 0;
-    if (seen >= expected) return seen;
+    seen = parseAccessLines(res.events ?? []);
+    if (seen.length >= expected) return seen;
     await new Promise((r) => setTimeout(r, 1500));
   }
   return seen;

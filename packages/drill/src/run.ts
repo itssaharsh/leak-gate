@@ -1,5 +1,5 @@
 import { makeCanary, type Canary } from "./canary";
-import { countLeaks, matchCaptures, summarize } from "./compare";
+import { countLeaks, matchCaptures, onShopClock, summarize } from "./compare";
 import type { DataMap } from "./datamap";
 import { JOURNEYS, runHttpJourneys } from "./journeys";
 import {
@@ -11,7 +11,7 @@ import {
   waitForAccessLines,
   type AwsSinkConfig,
 } from "./sinks";
-import type { Capture, DrillEvent, DrillReport, JourneyResult, StepId } from "./types";
+import type { AccessWindow, Capture, DrillEvent, DrillReport, JourneyResult, StepId } from "./types";
 
 export const STEPS: { id: StepId; label: string }[] = [
   { id: "plant", label: "Planting synthetic customer" },
@@ -91,9 +91,10 @@ export async function runDrill(opts: DrillOptions): Promise<DrillReport> {
   await emit("journeys", "done", `${journeys.length}/${JOURNEYS.length} journeys`);
 
   await emit("settle", "running");
+  let windows: AccessWindow[] = [];
   try {
-    const seen = await waitForAccessLines(opts.sinks, canary.runId, journeys.length, { start: startedAt - 2_000 }, opts.settleTimeoutMs);
-    await emit("settle", "done", `${seen}/${journeys.length} access lines in CloudWatch`);
+    windows = await waitForAccessLines(opts.sinks, canary.runId, journeys.length, { start: startedAt - 2_000 }, opts.settleTimeoutMs);
+    await emit("settle", "done", `${windows.length}/${journeys.length} access lines in CloudWatch`);
   } catch (e) {
     return fail("settle", String(e));
   }
@@ -136,7 +137,7 @@ export async function runDrill(opts: DrillOptions): Promise<DrillReport> {
   }
 
   await emit("compare", "running");
-  const hits = matchCaptures(captures, canary, opts.datamap, journeys);
+  const hits = matchCaptures(captures, canary, opts.datamap, onShopClock(journeys, windows));
   const leaks = countLeaks(hits);
   await emit("compare", "done", leaks === 0 ? "no planted value outside the data map" : `${leaks} leak${leaks === 1 ? "" : "s"}`);
 

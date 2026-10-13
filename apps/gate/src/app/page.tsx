@@ -1,6 +1,6 @@
 import { JudgeCard, TopBar } from "@/components/Brand";
 import { Console } from "@/components/Console";
-import { config, shopBuilds } from "@/lib/config";
+import { config, featuredCases, shopBuilds } from "@/lib/config";
 import { featuredRuns, replay, stages } from "@/lib/featured";
 
 export const dynamic = "force-dynamic";
@@ -8,12 +8,14 @@ export const dynamic = "force-dynamic";
 export default async function Home({ searchParams }: PageProps<"/">) {
   const sp = await searchParams;
   const forced = typeof sp.state === "string" ? sp.state : undefined;
-  const { before, after } = await featuredRuns();
+  const cases = featuredCases();
+  const chosen = cases.find((c) => c.mr === sp.mr) ?? cases[0];
+  const { before, after } = await featuredRuns(chosen?.mr);
   const builds = shopBuilds().map((b) => ({ id: b.id, label: b.id === "leaky" ? "Leaky build (before the fix)" : "Main build (fixed)" }));
   const repo = config.gitlabProjectUrl || undefined;
-  const mrRef = process.env.FEATURED_MR ? `!${process.env.FEATURED_MR}` : "newsletter-optin";
-  const mrUrl = repo && process.env.FEATURED_MR ? `${repo.replace(/\/$/, "")}/-/merge_requests/${process.env.FEATURED_MR}` : undefined;
-  const fixSha = process.env.FIX_COMMIT;
+  const mrRef = chosen ? `!${chosen.mr}` : "newsletter-optin";
+  const mrUrl = repo && chosen ? `${repo.replace(/\/$/, "")}/-/merge_requests/${chosen.mr}` : undefined;
+  const fixSha = chosen?.story.length ? undefined : process.env.FIX_COMMIT;
 
   return (
     <>
@@ -22,7 +24,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       <JudgeCard />
       <main className="order-1 mt-5 lg:order-2">
         <Console
-          mr={{ title: process.env.FEATURED_MR_TITLE ?? "Add newsletter opt-in to signup", ref: mrRef, url: mrUrl }}
+          mr={{ title: chosen?.title ?? process.env.FEATURED_MR_TITLE ?? "Add newsletter opt-in to signup", ref: mrRef, url: mrUrl }}
+          cases={cases.length > 1 ? cases.map((c) => ({ mr: c.mr, label: c.label, active: c.mr === chosen?.mr })) : undefined}
+          story={chosen?.story}
           before={before}
           after={after}
           replay={replay}
