@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { EvidenceDrawer, EvidenceList, destLabeller } from "@/components/Evidence";
 import { Explainer } from "@/components/Explainer";
 import { FlowMap } from "@/components/FlowMap";
+import type { StoryStep } from "@/lib/config";
 import { edgesOf, leakCount as countLeaks, leaksOf, plural, when, type Leak } from "@/lib/view";
 
 export interface RunView {
@@ -30,6 +31,10 @@ export interface ConsoleProps {
   stages: Stage[];
   repoUrl?: string;
   fixCommit?: { sha: string; url?: string; by: string };
+  /** Featured merge requests a visitor can switch between. */
+  cases?: { mr: string; label: string; active: boolean }[];
+  /** What happened on this merge request, each step linked to GitLab. */
+  story?: StoryStep[];
   forcedState?: string;
 }
 
@@ -172,16 +177,36 @@ export function Console(props: ConsoleProps) {
       {/* Run header */}
       <section className="flex flex-col gap-4 border-b border-line pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex min-w-0 flex-col gap-2">
-          <p className="text-[13px] text-ink-muted">
-            Merge request{" "}
-            {props.mr.url ? (
-              <a className="underline" href={props.mr.url} target="_blank" rel="noreferrer">
-                {props.mr.ref}
-              </a>
-            ) : (
-              <span className="font-mono">{props.mr.ref}</span>
-            )}
-          </p>
+          {props.cases ? (
+            <nav aria-label="Merge requests" className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
+              {props.cases.map((c) => (
+                <a
+                  key={c.mr}
+                  href={`/?mr=${c.mr}`}
+                  aria-current={c.active ? "page" : undefined}
+                  className={c.active ? "font-semibold text-ink underline decoration-2 underline-offset-4" : "text-ink-muted hover:text-ink"}
+                >
+                  !{c.mr} {c.label}
+                </a>
+              ))}
+              {props.mr.url && (
+                <a className="text-ink-muted underline hover:text-ink" href={props.mr.url} target="_blank" rel="noreferrer">
+                  Open {props.mr.ref} on GitLab ↗
+                </a>
+              )}
+            </nav>
+          ) : (
+            <p className="text-[13px] text-ink-muted">
+              Merge request{" "}
+              {props.mr.url ? (
+                <a className="underline" href={props.mr.url} target="_blank" rel="noreferrer">
+                  {props.mr.ref}
+                </a>
+              ) : (
+                <span className="font-mono">{props.mr.ref}</span>
+              )}
+            </p>
+          )}
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="font-display text-[26px] leading-tight font-extrabold sm:text-[30px]" style={{ fontVariationSettings: "'wdth' 112" }}>
               {props.mr.title}
@@ -277,7 +302,9 @@ export function Console(props: ConsoleProps) {
           <h2 className="text-[15px] font-semibold">
             {mode === "after" ? "What the fix removed" : "Each leak, with the line that proves it"}
           </h2>
-          {mode === "after" && props.fixCommit && (
+          {mode !== "after" && <HoldNote report={report} story={props.story} />}
+          {mode === "after" && props.story && props.story.length > 0 && <Story steps={props.story} />}
+          {mode === "after" && !props.story?.length && props.fixCommit && (
             <p className="text-[13px] text-ink-muted">
               Fixed by {props.fixCommit.by} in{" "}
               {props.fixCommit.url ? (
@@ -379,6 +406,54 @@ function Steps({ events, failed }: { events: DrillEvent[]; failed: boolean }) {
         );
       })}
     </ol>
+  );
+}
+
+const STEP_MARK: Record<NonNullable<StoryStep["kind"]>, string> = {
+  fail: "bg-danger",
+  hold: "bg-warning",
+  person: "bg-ink",
+  fix: "bg-canary shadow-[inset_0_0_0_1.5px_#111418]",
+  pass: "bg-success",
+};
+
+/** What happened on this merge request, step by step, each linked to the GitLab object behind it. */
+function Story({ steps }: { steps: StoryStep[] }) {
+  return (
+    <ol className="flex flex-col gap-2 rounded-md bg-surface-1 p-4 text-[13.5px] leading-5">
+      {steps.map((s, i) => (
+        <li key={i} className="flex gap-2.5">
+          <span aria-hidden className={`mt-1.5 inline-block size-2.5 shrink-0 rounded-full ${STEP_MARK[s.kind ?? "pass"]}`} />
+          {s.href ? (
+            <a href={s.href} target="_blank" rel="noreferrer" className="underline decoration-line-input underline-offset-2 hover:decoration-ink">
+              {s.text}
+            </a>
+          ) : (
+            <span>{s.text}</span>
+          )}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** Data reached a destination the data map has never heard of: the flow does not guess, a person decides. */
+function HoldNote({ report, story }: { report: DrillReport | null; story?: StoryStep[] }) {
+  const unknown = [...new Set((report?.hits ?? []).filter((h) => h.unknownDestination).map((h) => h.destination))];
+  if (!unknown.length) return null;
+  const hold = story?.find((s) => s.kind === "hold");
+  const names = unknown.map((d) => `“${d}”`).join(", ");
+  return (
+    <p className="rounded-md border-2 border-dashed border-warning bg-[#fff6db] px-3 py-2 text-[13.5px] leading-5">
+      {names} {unknown.length === 1 ? "is" : "are"} not in the data map, so the GitLab Duo flow did not guess.{" "}
+      {hold?.href ? (
+        <a href={hold.href} target="_blank" rel="noreferrer" className="font-semibold underline">
+          It held this merge request for the privacy lead.
+        </a>
+      ) : (
+        <span className="font-semibold">A new destination waits for the privacy lead.</span>
+      )}
+    </p>
   );
 }
 

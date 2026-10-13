@@ -14,10 +14,10 @@ function view(r: RunRecord | undefined, label: string): RunView | null {
  * The featured merge request's first blocked run (before the fix) and its latest passing
  * run (after the fix). Without a featured merge request yet, the latest drill of the leaky build.
  */
-export async function featuredRuns(): Promise<{ before: RunView | null; after: RunView | null; error?: string }> {
+export async function featuredRuns(mr: string = config.featuredMr): Promise<{ before: RunView | null; after: RunView | null; error?: string }> {
   try {
-    if (config.featuredMr) {
-      const runs = (await listRuns({ kind: "ci", mr: config.featuredMr }, 50)).filter((r) => r.report);
+    if (mr) {
+      const runs = (await listRuns({ kind: "ci", mr }, 50)).filter((r) => r.report);
       const chronological = runs.slice().reverse();
       const firstBlocked = chronological.find((r) => r.status === "blocked");
       const lastPassed = runs.find((r) => r.status === "passed" && (!firstBlocked || r.startedAt > firstBlocked.startedAt));

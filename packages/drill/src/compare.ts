@@ -1,6 +1,6 @@
 import { findMarkers, type Canary } from "./canary";
 import { isAllowed, type DataMap } from "./datamap";
-import type { Capture, DestinationSummary, Hit, JourneyResult } from "./types";
+import type { AccessWindow, Capture, DestinationSummary, Hit, JourneyResult } from "./types";
 
 const EXCERPT = 240;
 
@@ -13,13 +13,28 @@ export function excerptAround(text: string, index: number, length: number): stri
 }
 
 function journeyAt(at: number, journeys: JourneyResult[]): JourneyResult | undefined {
-  // Records are written during, or shortly after, the request that caused them.
+  // A record written while a request was in flight belongs to that request; otherwise to the
+  // request that finished most recently, since some records are written just after the response.
   const SLACK = 1500;
+  const inside = journeys.filter((j) => at >= j.startedAt - 50 && at <= j.endedAt + 50);
+  if (inside.length) return inside[inside.length - 1];
   let best: JourneyResult | undefined;
-  for (const j of journeys) {
-    if (at >= j.startedAt - 50 && at <= j.endedAt + SLACK) best = j;
-  }
+  for (const j of journeys) if (at > j.endedAt && at <= j.endedAt + SLACK && (!best || j.endedAt > best.endedAt)) best = j;
   return best;
+}
+
+/**
+ * Journeys are timed on the drill's clock and captures on the shop's. Each journey takes its window
+ * from the shop's own access line for it (matched in order by route), so both are on one clock.
+ */
+export function onShopClock(journeys: JourneyResult[], windows: AccessWindow[]): JourneyResult[] {
+  const used = new Set<number>();
+  return journeys.map((j) => {
+    const k = windows.findIndex((w, i) => !used.has(i) && w.path === j.route);
+    if (k < 0) return j;
+    used.add(k);
+    return { ...j, startedAt: windows[k].start, endedAt: windows[k].end };
+  });
 }
 
 /** Turns raw captures into hits: one per (capture, field), labelled allowed or leak. */
