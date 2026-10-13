@@ -51,7 +51,7 @@ export function JudgeCard() {
         <li>2. Click a red destination to see the exact captured line, with her planted value marked.</li>
         <li>3. Switch to After fix: a GitLab Duo flow committed the fix and the same drill found nothing.</li>
         <li>4. Run a live drill on the leaky build, with a first name of your choosing, and watch it happen.</li>
-        <li>5. Open the project on GitLab to see the merge request, its pipeline and the flow session.</li>
+        <li>5. Switch to merge request !2: data went to a CRM the data map has never seen, and the flow held it for the privacy lead.</li>
       </ol>
     </details>
   );

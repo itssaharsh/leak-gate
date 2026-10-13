@@ -51,7 +51,7 @@ const STEPS: { title: string; body: string; visual: ReactNode }[] = [
   },
   {
     title: "An AI agent fixes it, a person ships it",
-    body: "A GitLab Duo agent reads that proof, changes the code that leaked and explains why. The same test runs again, and a person approves the release.",
+    body: "A GitLab Duo agent reads that proof, changes the code that leaked and explains why. If the data went somewhere the list has never heard of, it does not guess: it asks the privacy lead. A person approves the release.",
     visual: (
       <div className="flex flex-wrap items-center gap-2 text-[13px] font-semibold">
         <span className="inline-flex h-7 items-center gap-1.5 rounded-sm bg-danger px-2.5 text-white">■ Blocked: 11 leaks</span>

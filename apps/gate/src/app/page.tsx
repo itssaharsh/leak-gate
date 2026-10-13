@@ -26,7 +26,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         <Console
           mr={{ title: chosen?.title ?? process.env.FEATURED_MR_TITLE ?? "Add newsletter opt-in to signup", ref: mrRef, url: mrUrl }}
           cases={cases.length > 1 ? cases.map((c) => ({ mr: c.mr, label: c.label, active: c.mr === chosen?.mr })) : undefined}
-          story={chosen?.story}
+          story={chosen?.story.map((s) => ({ ...s, href: s.href?.startsWith("/-/") && repo ? `${repo.replace(/\/$/, "")}${s.href}` : s.href }))}
           before={before}
           after={after}
           replay={replay}
