@@ -1,6 +1,6 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
-import { captureSortKey, type DrillEvent, type DrillReport } from "@leakgate/drill";
+import { captureSortKey, seenVendorsKey, VENDORS, type DrillEvent, type DrillReport } from "@leakgate/drill";
 import { config } from "./config";
 
 const db = DynamoDBDocumentClient.from(new DynamoDBClient({ region: config.region }), {
@@ -16,6 +16,10 @@ export async function putCapture(vendor: string, env: string, body: string, id: 
       Item: { vendor, sk: captureSortKey(at, id), env, body, at, ttl: Math.floor(at / 1000) + 7 * DAY },
     }),
   );
+  // Note vendors outside the known four, so the drill reads destinations nobody declared.
+  if (!(VENDORS as readonly string[]).includes(vendor)) {
+    await db.send(new PutCommand({ TableName: config.capturesTable, Item: { vendor: seenVendorsKey(env), sk: vendor, env, at, ttl: Math.floor(at / 1000) + 7 * DAY } }));
+  }
 }
 
 export type RunKind = "ci" | "live";

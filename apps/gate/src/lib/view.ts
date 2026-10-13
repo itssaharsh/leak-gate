@@ -11,6 +11,12 @@ export const FIELD_LABEL: Record<Field, string> = {
 export const FIELD_ORDER: Field[] = ["name", "email", "phone", "password", "address"];
 export const DEST_ORDER = ["database", "app-logs", "error-tracker", "analytics", "email-vendor", "shipping-vendor"];
 
+/** Position on the map: the declared destinations in their usual order, anything else after them. */
+export function destRank(id: string): number {
+  const i = DEST_ORDER.indexOf(id);
+  return i < 0 ? DEST_ORDER.length : i;
+}
+
 /** All leaks into one destination: the fields that reached it and the captures that prove it. */
 export interface Leak {
   key: string;
@@ -32,7 +38,7 @@ export function leaksOf(report?: DrillReport | null): Leak[] {
     byDest.set(h.destination, l);
   }
   for (const l of byDest.values()) l.fields.sort((a, b) => FIELD_ORDER.indexOf(a) - FIELD_ORDER.indexOf(b));
-  return [...byDest.values()].sort((a, b) => DEST_ORDER.indexOf(a.destination) - DEST_ORDER.indexOf(b.destination));
+  return [...byDest.values()].sort((a, b) => destRank(a.destination) - destRank(b.destination));
 }
 
 /** Number of (field, destination) pairs outside the data map. */

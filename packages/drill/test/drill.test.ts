@@ -4,7 +4,7 @@ import { cleanFirstName, findMarkers, makeCanary } from "../src/canary";
 import { countLeaks, matchCaptures, summarize } from "../src/compare";
 import { isAllowed, parseDataMap } from "../src/datamap";
 import { aroundNeedle, toGitLabSecurityReport, toJUnit, toMarkdown } from "../src/report";
-import { anyTermPattern, captureSortKey } from "../src/sinks";
+import { anyTermPattern, captureSortKey, seenVendorsKey, VENDOR_SLUG } from "../src/sinks";
 import type { Capture, DrillReport, JourneyResult } from "../src/types";
 
 const datamap = parseDataMap(readFileSync(new URL("../../../privacy/datamap.yml", import.meta.url), "utf8"));
@@ -165,6 +165,42 @@ describe("reports", () => {
   });
 });
 
+describe("a destination the data map has never seen", () => {
+  const c = makeCanary("Ada");
+  const now = Date.now();
+  const crm: Capture = {
+    destination: "crm",
+    source: "vendor:crm",
+    text: JSON.stringify({ contact: { name: c.name, email: c.email, phone: c.phone } }),
+    at: now + 40,
+  };
+  const hits = matchCaptures([crm], c, datamap, journeys(now));
+  const r: DrillReport = { ...report(), hits, destinations: summarize(hits, datamap), leaks: countLeaks(hits) };
+
+  it("counts every field that reached it as a leak and flags it as unknown", () => {
+    expect(hits.map((h) => h.field).sort()).toEqual(["email", "name", "phone"]);
+    expect(hits.every((h) => !h.allowed && h.unknownDestination)).toBe(true);
+    expect(countLeaks(hits)).toBe(3);
+  });
+
+  it("lists it after the declared destinations", () => {
+    const s = summarize(hits, datamap);
+    expect(s.at(-1)).toMatchObject({ id: "crm", kind: "unknown", leaks: 3 });
+    expect(s.filter((d) => d.kind !== "unknown")).toHaveLength(datamap.destinations.length);
+  });
+
+  it("asks for the privacy lead in every report", () => {
+    expect(toJUnit(r, datamap)).toContain("phone stays out of crm, a destination not in the data map");
+    expect(toMarkdown(r, datamap)).toContain("**New destination:** `crm` is not listed in privacy/datamap.yml");
+    const sec = toGitLabSecurityReport(r, datamap) as { vulnerabilities: { solution: string }[] };
+    expect(sec.vulnerabilities[0].solution).toMatch(/privacy lead/);
+  });
+
+  it("does not flag a declared destination as unknown", () => {
+    expect(matchCaptures([{ ...crm, destination: "analytics" }], c, datamap).some((h) => h.unknownDestination)).toBe(false);
+  });
+});
+
 describe("sink helpers", () => {
   it("builds an OR filter pattern with quoted terms", () => {
     expect(anyTermPattern(["a@b.test", 'x"y', ""])).toBe('?"a@b.test" ?"xy"');
@@ -172,5 +208,11 @@ describe("sink helpers", () => {
 
   it("sorts capture keys by time as strings", () => {
     expect(captureSortKey(5, "a") < captureSortKey(40, "a")).toBe(true);
+  });
+
+  it("accepts a new vendor name but never the gate's own bookkeeping keys", () => {
+    expect(VENDOR_SLUG.test("crm")).toBe(true);
+    expect(VENDOR_SLUG.test(seenVendorsKey("mr-2"))).toBe(false);
+    expect(VENDOR_SLUG.test("../analytics")).toBe(false);
   });
 });

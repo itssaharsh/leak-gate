@@ -5,6 +5,7 @@ import { JOURNEYS, runHttpJourneys } from "./journeys";
 import {
   cloudWatchReader,
   databaseReader,
+  seenVendors,
   vendorReader,
   VENDORS,
   waitForAccessLines,
@@ -113,7 +114,9 @@ export async function runDrill(opts: DrillOptions): Promise<DrillReport> {
   await emit("search-vendors", "running");
   try {
     let n = 0;
-    for (const v of VENDORS) {
+    const declared = opts.datamap.destinations.filter((d) => d.kind === "vendor").map((d) => d.id);
+    const vendors = [...new Set<string>([...VENDORS, ...declared, ...(await seenVendors(opts.sinks))])];
+    for (const v of vendors) {
       const got = await vendorReader(opts.sinks, v).read(window);
       n += got.length;
       captures.push(...got);

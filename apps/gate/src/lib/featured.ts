@@ -42,7 +42,7 @@ export function stages(before: RunView | null, after: RunView | null): Stage[] {
   const repo = config.gitlabProjectUrl.replace(/\/$/, "");
   const def = (id: string, label: string, done: boolean, what: string, href?: string): Stage => ({ id, label, done, what, href: links[id] ?? href });
   return [
-    def("plan", "Plan", Boolean(links.plan), "An issue is opened for each leak, with the captured evidence."),
+    def("plan", "Plan", Boolean(links.plan), "The feature starts as an issue that the merge request closes; the production canary opens incidents."),
     def("create", "Create", Boolean(after) || Boolean(links.create), "The GitLab Duo flow commits the fix to the merge request branch."),
     def("verify", "Verify", Boolean(before), "The drill job plants a synthetic customer and runs her journeys.", before?.report.ci?.jobUrl),
     def("package", "Package", Boolean(links.package), "The shop build is published to the project's package registry."),
@@ -56,6 +56,6 @@ export function stages(before: RunView | null, after: RunView | null): Stage[] {
     def("release", "Release", Boolean(links.release), "The merge deploys to production and the release carries the record of processing."),
     def("configure", "Configure", true, "privacy/datamap.yml declares where each field may go.", repo ? `${repo}/-/blob/main/privacy/datamap.yml` : undefined),
     def("monitor", "Monitor", Boolean(links.monitor), "A scheduled pipeline drills production every hour."),
-    def("govern", "Govern", Boolean(links.govern), "Merging is blocked while leaks are open; production needs a person to approve."),
+    def("govern", "Govern", Boolean(links.govern), "Any leak fails the merge request pipeline; production deploys only when a person runs the job."),
   ];
 }

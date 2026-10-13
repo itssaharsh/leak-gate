@@ -6,6 +6,14 @@ import type { Capture, SinkReader } from "./types";
 export const VENDORS = ["error-tracker", "analytics", "email-vendor", "shipping-vendor"] as const;
 export type Vendor = (typeof VENDORS)[number];
 
+/** Vendor names the gate accepts: the known four, or any lowercase slug for a destination the shop adds later. */
+export const VENDOR_SLUG = /^[a-z][a-z0-9-]{1,39}$/;
+
+/** Partition where the gate notes each vendor name an environment has sent data to. */
+export function seenVendorsKey(env: string): string {
+  return `_seen#${env}`;
+}
+
 /** Capture sort keys: zero-padded epoch ms, so a time window is a string range. */
 export function captureSortKey(at: number, id: string): string {
   return `${String(at).padStart(13, "0")}#${id}`;
@@ -96,8 +104,21 @@ export async function waitForAccessLines(
   return seen;
 }
 
+/** Every vendor name this environment has sent data to, including ones the data map does not list. */
+export async function seenVendors(cfg: AwsSinkConfig): Promise<string[]> {
+  const db = docClient(cfg.region);
+  const res = await db.send(
+    new QueryCommand({
+      TableName: cfg.capturesTable,
+      KeyConditionExpression: "vendor = :v",
+      ExpressionAttributeValues: { ":v": seenVendorsKey(cfg.env) },
+    }),
+  );
+  return (res.Items ?? []).map((i) => String(i.sk)).filter((v) => VENDOR_SLUG.test(v));
+}
+
 /** Requests received by the simulated vendors, recorded by the gate app. */
-export function vendorReader(cfg: AwsSinkConfig, vendor: Vendor): SinkReader {
+export function vendorReader(cfg: AwsSinkConfig, vendor: string): SinkReader {
   const db = docClient(cfg.region);
   return {
     destination: vendor,

@@ -605,6 +605,36 @@
         "E0054",
         "E0055"
       ]
+    },
+    {
+      "id": "T19",
+      "title": "Hold destinations the data map has never seen for the privacy lead",
+      "objective": "Gate accepts and notes any vendor name; the drill reads every vendor an environment used, flags undeclared destinations as leaks, names them in JUnit, security and markdown reports; the console shows them in amber; then a real merge request proves the Duo flow holds it for the privacy lead",
+      "role": "backend-engineer",
+      "size": "M",
+      "deps": [
+        "T18"
+      ],
+      "writes": [
+        "packages/drill/**",
+        "apps/gate/src/**",
+        "apps/shop/src/**",
+        "privacy/datamap.yml"
+      ],
+      "acceptance": [
+        "AC-4"
+      ],
+      "verify": [
+        "npm test -w packages/drill",
+        "npm run typecheck",
+        "npm run build -w apps/gate",
+        "observe: on a real merge request the flow holds an undeclared destination for the privacy lead without a commit"
+      ],
+      "rollback": "git revert",
+      "status": "doing",
+      "notes": "Requested 13 Oct: do what you can to win. The flow instructions already hold unknown destinations; the gate rejected unknown vendors, so the path never ran.",
+      "base": "bb05f21",
+      "started_after": 55
     }
   ]
 }

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { VENDORS } from "@leakgate/drill";
+import { VENDOR_SLUG } from "@leakgate/drill";
 import { secretMatches } from "@/lib/auth";
 import { config } from "@/lib/config";
 import { putCapture } from "@/lib/store";
@@ -8,11 +8,12 @@ const MAX_BYTES = 16 * 1024;
 
 /**
  * The shop's simulated third-party vendors. Each request body is recorded as received,
- * so the drill can see exactly what the shop sent out.
+ * so the drill can see exactly what the shop sent out. Any vendor name is accepted, so a
+ * destination the data map has never heard of is still recorded and found.
  */
 export async function POST(req: Request, ctx: RouteContext<"/api/vendors/[vendor]">) {
   const { vendor } = await ctx.params;
-  if (!(VENDORS as readonly string[]).includes(vendor)) return Response.json({ error: "Unknown vendor" }, { status: 404 });
+  if (!VENDOR_SLUG.test(vendor)) return Response.json({ error: "Vendor names are lowercase letters, digits and dashes" }, { status: 404 });
   if (!secretMatches(req.headers.get("x-vendor-key"), config.vendorKey)) return Response.json({ error: "Missing or wrong vendor key" }, { status: 401 });
 
   const body = await req.text();

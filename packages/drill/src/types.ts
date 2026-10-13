@@ -28,6 +28,8 @@ export interface Hit {
   journey?: string;
   /** The shop file that handles that journey's request. */
   file?: string;
+  /** The destination is not listed in the data map at all: a new recipient that needs privacy review. */
+  unknownDestination?: boolean;
 }
 
 export interface JourneyResult {
@@ -65,7 +67,8 @@ export interface DrillEvent {
 export interface DestinationSummary {
   id: string;
   label: string;
-  kind: "internal" | "vendor";
+  /** "unknown": the data reached a destination the data map does not list. */
+  kind: "internal" | "vendor" | "unknown";
   simulated: boolean;
   leaks: number;
   allowedHits: number;

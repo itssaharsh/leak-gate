@@ -25,6 +25,7 @@ function journeyAt(at: number, journeys: JourneyResult[]): JourneyResult | undef
 /** Turns raw captures into hits: one per (capture, field), labelled allowed or leak. */
 export function matchCaptures(captures: Capture[], canary: Canary, map: DataMap, journeys: JourneyResult[] = []): Hit[] {
   const hits: Hit[] = [];
+  const known = new Set(map.destinations.map((d) => d.id));
   for (const capture of captures) {
     const flat = capture.text.replace(/\s+/g, " ");
     for (const { marker, needle, index } of findMarkers(flat, canary.markers)) {
@@ -40,6 +41,7 @@ export function matchCaptures(captures: Capture[], canary: Canary, map: DataMap,
         ref: capture.ref,
         journey: journey?.id,
         file: journey?.file,
+        ...(known.has(capture.destination) ? {} : { unknownDestination: true }),
       });
     }
   }
@@ -63,7 +65,7 @@ export function countLeaks(hits: Hit[]): number {
 }
 
 export function summarize(hits: Hit[], map: DataMap): DestinationSummary[] {
-  return map.destinations.map((d) => {
+  const declared: DestinationSummary[] = map.destinations.map((d) => {
     const mine = hits.filter((h) => h.destination === d.id);
     return {
       id: d.id,
@@ -74,4 +76,14 @@ export function summarize(hits: Hit[], map: DataMap): DestinationSummary[] {
       allowedHits: new Set(mine.filter((h) => h.allowed).map((h) => h.field)).size,
     };
   });
+  // Destinations the data map has never heard of still show up, so a new recipient is never invisible.
+  const unknown = [...new Set(hits.filter((h) => h.unknownDestination).map((h) => h.destination))].map((id) => ({
+    id,
+    label: id,
+    kind: "unknown" as const,
+    simulated: true,
+    leaks: new Set(hits.filter((h) => h.destination === id).map((h) => h.field)).size,
+    allowedHits: 0,
+  }));
+  return [...declared, ...unknown];
 }

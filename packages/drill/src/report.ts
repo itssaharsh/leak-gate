@@ -12,8 +12,16 @@ const FIELD_WORDS: Record<Field, string> = {
 };
 
 export function destinationLabel(map: DataMap, id: string): string {
-  return map.destinations.find((d) => d.id === id)?.label ?? id;
+  return map.destinations.find((d) => d.id === id)?.label ?? `${id} (not in the data map)`;
 }
+
+/** Destinations that received planted data but are not listed in privacy/datamap.yml at all. */
+export function unknownDestinations(report: DrillReport): string[] {
+  return [...new Set(report.hits.filter((h) => h.unknownDestination).map((h) => h.destination))];
+}
+
+const PRIVACY_REVIEW =
+  "is not listed in privacy/datamap.yml. A new destination needs the privacy lead's review: either add it to the data map with its purpose, recipient and retention, or stop sending to it.";
 
 function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -40,6 +48,19 @@ export function toJUnit(report: DrillReport, map: DataMap): string {
       } else {
         cases.push(`    <testcase classname="leak-gate.${field}" name="${esc(name)}"/>`);
       }
+    }
+  }
+  for (const dest of unknownDestinations(report)) {
+    for (const field of FIELDS) {
+      const hit = report.hits.find((h) => h.field === field && h.destination === dest);
+      if (!hit) continue;
+      failures++;
+      cases.push(
+        `    <testcase classname="leak-gate.${field}" name="${esc(`${field} stays out of ${dest}, a destination not in the data map`)}" file="${esc(hit.file ?? "")}">\n` +
+          `      <failure message="${esc(`${FIELD_WORDS[field]} reached ${dest}, which ${PRIVACY_REVIEW}`)}">${esc(
+            `Captured from ${hit.source} during "${hit.journey ?? "unknown journey"}":\n${hit.excerpt}`,
+          )}</failure>\n    </testcase>`,
+      );
     }
   }
   const time = ((report.endedAt - report.startedAt) / 1000).toFixed(1);
@@ -85,10 +106,15 @@ export function toGitLabSecurityReport(report: DrillReport, map: DataMap): objec
         name: `Customer ${FIELD_WORDS[h.field]} reaches ${dest}`,
         description:
           `Leak Gate planted a synthetic customer and found her ${FIELD_WORDS[h.field]} in ${dest} ` +
-          `(${h.source}) during the "${h.journey ?? "unknown"}" journey. The data map (privacy/datamap.yml) does not allow ` +
-          `${h.field} to reach ${h.destination}. Captured: ${h.excerpt}`,
+          `(${h.source}) during the "${h.journey ?? "unknown"}" journey. ` +
+          (h.unknownDestination
+            ? `The destination ${h.destination} ${PRIVACY_REVIEW} `
+            : `The data map (privacy/datamap.yml) does not allow ${h.field} to reach ${h.destination}. `) +
+          `Captured: ${h.excerpt}`,
         severity: h.field === "password" ? "Critical" : "High",
-        solution: "Stop sending this field to the destination, or update privacy/datamap.yml if the flow is intended and approved.",
+        solution: h.unknownDestination
+          ? "Hold the change for the privacy lead. They decide whether this destination belongs in privacy/datamap.yml."
+          : "Stop sending this field to the destination, or update privacy/datamap.yml if the flow is intended and approved.",
         location: { file: h.file ?? "privacy/datamap.yml", start_line: 1 },
         identifiers: [
           { type: "leak_gate", name: `Leak Gate ${h.field} to ${h.destination}`, value: `${h.field}:${h.destination}` },
@@ -123,6 +149,9 @@ export function toMarkdown(report: DrillReport, map: DataMap): string {
     lines.push("| Field | Reached | During | Captured |", "|---|---|---|---|");
     for (const h of leaks) {
       lines.push(`| ${h.field} | ${destinationLabel(map, h.destination)} | ${h.journey ?? ""} | \`${aroundNeedle(h.excerpt, h.needle, 120).replace(/\|/g, "\\|")}\` |`);
+    }
+    for (const dest of unknownDestinations(report)) {
+      lines.push("", `**New destination:** \`${dest}\` ${PRIVACY_REVIEW}`);
     }
   } else if (report.status === "passed") {
     lines.push("No planted value reached a destination outside `privacy/datamap.yml`.");

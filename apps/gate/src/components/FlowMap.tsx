@@ -2,7 +2,7 @@
 
 import type { DestinationSummary, DrillReport, Field } from "@leakgate/drill";
 import { useLayoutEffect, useRef, useState } from "react";
-import { FIELD_LABEL, FIELD_ORDER, edgesOf, type Edge } from "@/lib/view";
+import { FIELD_LABEL, FIELD_ORDER, destRank, edgesOf, type Edge } from "@/lib/view";
 
 const DEST_ORDER = ["database", "app-logs", "error-tracker", "analytics", "email-vendor", "shipping-vendor"];
 
@@ -58,7 +58,7 @@ export function FlowMap({
     return () => ro.disconnect();
   }, [report]);
 
-  const destinations: DestinationSummary[] = (report?.destinations ?? []).slice().sort((a, b) => DEST_ORDER.indexOf(a.id) - DEST_ORDER.indexOf(b.id));
+  const destinations: DestinationSummary[] = (report?.destinations ?? []).slice().sort((a, b) => destRank(a.id) - destRank(b.id));
   const edges = edgesOf(report);
   const shown = [...edges, ...retracted.map((e) => ({ ...e, gone: true }))] as (Edge & { gone?: boolean })[];
   const canary = report?.canary;
@@ -150,6 +150,7 @@ export function FlowMap({
       <ul className="relative z-10 order-first flex flex-col gap-2 self-center md:order-none">
         {(destinations.length ? destinations : placeholderDestinations()).map((d) => {
           const leaking = d.leaks > 0;
+          const unknown = d.kind === "unknown";
           return (
             <li key={d.id} ref={(n) => { destRefs.current[d.id] = n; }}>
               <button
@@ -161,12 +162,14 @@ export function FlowMap({
                 onBlur={() => setHover(null)}
                 disabled={!report}
                 className={`flex h-12 w-full items-center justify-between gap-3 rounded-md border px-3 text-left transition-colors md:h-14 ${
-                  leaking ? "border-danger bg-danger-container" : "border-line bg-canvas hover:bg-surface-1"
+                  unknown ? "border-2 border-dashed border-warning bg-[#fff6db]" : leaking ? "border-danger bg-danger-container" : "border-line bg-canvas hover:bg-surface-1"
                 } ${running ? "opacity-70" : ""}`}
               >
                 <span className="flex min-w-0 flex-col">
                   <span className="truncate text-[15px] font-semibold">{d.label}</span>
-                  <span className="text-[12px] text-ink-muted">{d.simulated ? "Simulated vendor" : d.kind === "internal" ? "Inside the shop" : "Vendor"}</span>
+                  <span className={`text-[12px] ${unknown ? "font-semibold text-warning" : "text-ink-muted"}`}>
+                    {unknown ? "Not in the data map" : d.simulated ? "Simulated vendor" : d.kind === "internal" ? "Inside the shop" : "Vendor"}
+                  </span>
                 </span>
                 {leaking ? (
                   <span className="tabular flex h-8 min-w-8 items-center justify-center rounded-sm bg-danger px-2 font-display text-lg font-extrabold text-white" aria-label={`${d.leaks} leaked fields`}>
