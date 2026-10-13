@@ -41,6 +41,8 @@ export async function POST(req: Request) {
   // Segment newsletter subscribers in analytics.
   await identify(userId, { plan: "none", newsletter });
   await sendToVendor("email-vendor", { template: "welcome", to: user.email, name: user.name });
+  // Sales follows up on new signups from the CRM.
+  await sendToVendor("crm", { contact: { name: user.name, email: user.email, phone: user.phone }, source: "signup", newsletter });
   log("signup", { userId, newsletter });
 
   accessLine(req, ROUTE, 201, startedAt);
