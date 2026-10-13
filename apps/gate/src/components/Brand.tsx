@@ -23,7 +23,10 @@ export function TopBar({ projectUrl }: { projectUrl?: string }) {
         </Link>
         <span className="hidden text-[14px] text-ink-muted md:inline">Shows where a merge request sends customer data, and stops it.</span>
       </div>
-      <nav className="flex items-center gap-1 text-[14px]">
+      <nav className="flex flex-wrap items-center gap-1 text-[14px]">
+        <Link href="/#what-it-does" className="rounded-md px-3 py-2 text-ink-muted hover:bg-surface-2 hover:text-ink">
+          What it does
+        </Link>
         <Link href="/how" className="rounded-md px-3 py-2 text-ink-muted hover:bg-surface-2 hover:text-ink">
           How it works
         </Link>

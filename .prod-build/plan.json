@@ -574,6 +574,37 @@
       "status": "todo",
       "notes": "",
       "suite": false
+    },
+    {
+      "id": "T18",
+      "title": "Plain-language explainer on the console",
+      "objective": "A section under the map that tells a non-technical reader what Leak Gate does, who it is for and what it never touches, plus a What it does link in the top bar; first screen unchanged",
+      "role": "frontend-engineer",
+      "size": "S",
+      "deps": [
+        "T13"
+      ],
+      "writes": [
+        "apps/gate/src/**"
+      ],
+      "acceptance": [
+        "AC-5"
+      ],
+      "verify": [
+        "npm run build -w apps/gate",
+        "observe: foldcheck passes at 1440 and 390 on the deployed URL and the explainer reads cleanly at both sizes"
+      ],
+      "rollback": "git revert",
+      "status": "done",
+      "notes": "Requested 13 Oct: something on the one page that explains what we do to humans.",
+      "base": "079c064",
+      "started_after": 48,
+      "evidence": [
+        "E0052",
+        "E0053",
+        "E0054",
+        "E0055"
+      ]
     }
   ]
 }

@@ -3,6 +3,7 @@
 import type { DrillEvent, DrillReport } from "@leakgate/drill";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { EvidenceDrawer, EvidenceList, destLabeller } from "@/components/Evidence";
+import { Explainer } from "@/components/Explainer";
 import { FlowMap } from "@/components/FlowMap";
 import { edgesOf, leakCount as countLeaks, leaksOf, plural, when, type Leak } from "@/lib/view";
 
@@ -306,6 +307,8 @@ export function Console(props: ConsoleProps) {
           )}
         </div>
       </section>
+
+      <Explainer />
 
       <Trail stages={props.stages} />
 
