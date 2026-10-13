@@ -209,15 +209,16 @@ describe("journey attribution across clocks", () => {
 });
 
 describe("a destination the data map has never seen", () => {
+  // A name no data map here will declare: the real file changes as merge requests add destinations.
   const c = makeCanary("Ada");
   const now = Date.now();
-  const crm: Capture = {
-    destination: "crm",
-    source: "vendor:crm",
+  const partner: Capture = {
+    destination: "partner-api",
+    source: "vendor:partner-api",
     text: JSON.stringify({ contact: { name: c.name, email: c.email, phone: c.phone } }),
     at: now + 40,
   };
-  const hits = matchCaptures([crm], c, datamap, journeys(now));
+  const hits = matchCaptures([partner], c, datamap, journeys(now));
   const r: DrillReport = { ...report(), hits, destinations: summarize(hits, datamap), leaks: countLeaks(hits) };
 
   it("counts every field that reached it as a leak and flags it as unknown", () => {
@@ -228,19 +229,19 @@ describe("a destination the data map has never seen", () => {
 
   it("lists it after the declared destinations", () => {
     const s = summarize(hits, datamap);
-    expect(s.at(-1)).toMatchObject({ id: "crm", kind: "unknown", leaks: 3 });
+    expect(s.at(-1)).toMatchObject({ id: "partner-api", kind: "unknown", leaks: 3 });
     expect(s.filter((d) => d.kind !== "unknown")).toHaveLength(datamap.destinations.length);
   });
 
   it("asks for the privacy lead in every report", () => {
-    expect(toJUnit(r, datamap)).toContain("phone stays out of crm, a destination not in the data map");
-    expect(toMarkdown(r, datamap)).toContain("**New destination:** `crm` is not listed in privacy/datamap.yml");
+    expect(toJUnit(r, datamap)).toContain("phone stays out of partner-api, a destination not in the data map");
+    expect(toMarkdown(r, datamap)).toContain("**New destination:** `partner-api` is not listed in privacy/datamap.yml");
     const sec = toGitLabSecurityReport(r, datamap) as { vulnerabilities: { solution: string }[] };
     expect(sec.vulnerabilities[0].solution).toMatch(/privacy lead/);
   });
 
   it("does not flag a declared destination as unknown", () => {
-    expect(matchCaptures([{ ...crm, destination: "analytics" }], c, datamap).some((h) => h.unknownDestination)).toBe(false);
+    expect(matchCaptures([{ ...partner, destination: "analytics" }], c, datamap).some((h) => h.unknownDestination)).toBe(false);
   });
 });
 
