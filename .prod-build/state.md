@@ -2,7 +2,7 @@
 Updated: 2026-10-13 | mode: hackathon | channel: direct | phase: submission material ready; waiting on the YouTube upload and the Devpost form
 
 ## Now
-- Tasks: T01-T07 and T09-T15 done; T08 and T16 (video takes) recorded on 13 Oct; T17 (submission) waits on the YouTube link and the Devpost form, both the user's.
+- Tasks: T01-T16 and T18 (plain-language explainer under the map) done; T17 (submission) waits on the YouTube link and the Devpost form, both the user's.
 - Last good deploy: gate + shop-main + shop-leaky on AWS. GitLab main at 480677a1 deployed to production by the manual job (pipeline 2939776831), release v1.0.10.
 
 ## What worked (with evidence IDs)
@@ -28,7 +28,6 @@ Updated: 2026-10-13 | mode: hackathon | channel: direct | phase: submission mate
 ## Changes that need care
 - AWS (account ...6889, us-east-1): tables leakgate-captures, leakgate-runs, leakgate-shop-users; roles leakgate-shop-role, leakgate-gate-role; functions leakgate-gate, leakgate-shop-main, leakgate-shop-leaky; role leakgate-gitlab-ci for GitLab OIDC.
 - Secrets live only in ../.env.local (VENDOR_KEY, DRILL_TOKEN, GITLAB_TOKEN), Lambda env and masked GitLab CI variables.
-- The project name "Leak Gate" is a working title; the organisers ask entrants not to let AI name the project.
 
 ## Exact next step
 The user uploads ../video/build/final.mp4 to YouTube (public or unlisted), then runs
