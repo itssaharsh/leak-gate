@@ -42,7 +42,8 @@ export async function POST(req: Request) {
   await identify(userId, { plan: "none", newsletter });
   await sendToVendor("email-vendor", { template: "welcome", to: user.email, name: user.name });
   // Sales follows up on new signups from the CRM.
-  await sendToVendor("crm", { contact: { name: user.name, email: user.email, phone: user.phone }, source: "signup", newsletter });
+  // The data map only allows name and email in the CRM; phone stays in the shop database.
+  await sendToVendor("crm", { contact: { name: user.name, email: user.email }, source: "signup", newsletter });
   log("signup", { userId, newsletter });
 
   accessLine(req, ROUTE, 201, startedAt);
