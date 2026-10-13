@@ -44,11 +44,18 @@ destinations:
     recipient: Courier (processor)
     retention: 90 days after delivery
 
+  crm:
+    label: CRM
+    kind: vendor
+    simulated: true
+    purpose: Let sales follow up with new customers by email
+    recipient: CRM vendor (processor)
+    retention: Until the customer opts out of sales contact, then 30 days
 fields:
   name:
-    allowed: [database, email-vendor, shipping-vendor]
+    allowed: [database, email-vendor, shipping-vendor, crm]
   email:
-    allowed: [database, email-vendor]
+    allowed: [database, email-vendor, crm]
   phone:
     allowed: [database]
   # Passwords are stored only as a salted hash, so the planted password may appear nowhere.

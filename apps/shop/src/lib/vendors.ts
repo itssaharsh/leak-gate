@@ -1,6 +1,6 @@
 import { log } from "./log";
 
-export type Vendor = "error-tracker" | "analytics" | "email-vendor" | "shipping-vendor";
+export type Vendor = "error-tracker" | "analytics" | "email-vendor" | "shipping-vendor" | "crm";
 
 /**
  * Sends a payload to one of the shop's third-party vendors. In this demo the vendors are
