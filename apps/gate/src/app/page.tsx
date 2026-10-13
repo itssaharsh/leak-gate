@@ -16,6 +16,9 @@ export default async function Home({ searchParams }: PageProps<"/">) {
   const mrRef = chosen ? `!${chosen.mr}` : "newsletter-optin";
   const mrUrl = repo && chosen ? `${repo.replace(/\/$/, "")}/-/merge_requests/${chosen.mr}` : undefined;
   const fixSha = chosen?.story.length ? undefined : process.env.FIX_COMMIT;
+  // Links in CASES may be relative to the GitLab project ("/-/commit/..."), to stay under Lambda's 4 KB environment limit.
+  const abs = (href?: string) => (href?.startsWith("/-/") && repo ? `${repo.replace(/\/$/, "")}${href}` : href);
+  const lifecycle = Object.fromEntries(Object.entries(chosen?.lifecycle ?? {}).map(([k, v]) => [k, abs(v) ?? v]));
 
   return (
     <>
@@ -26,12 +29,12 @@ export default async function Home({ searchParams }: PageProps<"/">) {
         <Console
           mr={{ title: chosen?.title ?? process.env.FEATURED_MR_TITLE ?? "Add newsletter opt-in to signup", ref: mrRef, url: mrUrl }}
           cases={cases.length > 1 ? cases.map((c) => ({ mr: c.mr, label: c.label, active: c.mr === chosen?.mr })) : undefined}
-          story={chosen?.story.map((s) => ({ ...s, href: s.href?.startsWith("/-/") && repo ? `${repo.replace(/\/$/, "")}${s.href}` : s.href }))}
+          story={chosen?.story.map((s) => ({ ...s, href: abs(s.href) }))}
           before={before}
           after={after}
           replay={replay}
           builds={builds}
-          stages={stages(before, after)}
+          stages={stages(before, after, lifecycle)}
           repoUrl={repo}
           fixCommit={fixSha ? { sha: fixSha.slice(0, 8), url: repo ? `${repo.replace(/\/$/, "")}/-/commit/${fixSha}` : undefined, by: "the GitLab Duo leak-fix flow" } : undefined}
           forcedState={forced}

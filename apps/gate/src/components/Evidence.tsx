@@ -1,6 +1,6 @@
 "use client";
 
-import type { DrillReport } from "@leakgate/drill";
+import type { DrillReport, Field } from "@leakgate/drill";
 import { useEffect, useRef } from "react";
 import { FIELD_LABEL, bestCapture, markNeedles, when, type Leak } from "@/lib/view";
 
@@ -45,19 +45,25 @@ export function EvidenceList({
     <ul className="flex flex-col divide-y divide-line">
       {leaks.map((l, i) => {
         const cap = bestCapture(l);
+        const words = (fields: Field[]) => fields.map((f) => FIELD_LABEL[f].toLowerCase()).join(", ");
+        const allowedNow = l.allowedNow ?? [];
+        // After the fix, only values that stopped flowing are redacted; values a person allowed are left as they were.
+        const needles = l.hits.filter((h) => !fixed || l.fields.includes(h.field)).map((h) => h.needle);
         return (
           <li key={l.key}>
             <button type="button" onClick={() => onOpen(l)} className="flex w-full flex-col gap-1.5 px-1 py-3 text-left hover:bg-surface-1 focus-visible:bg-surface-1">
               <span className="flex flex-wrap items-center gap-2 text-[15px] font-semibold">
                 {fixed ? <span aria-hidden className="text-success">✓</span> : <span aria-hidden className="inline-block size-2 rounded-full bg-danger" />}
-                <span className={fixed ? "text-ink-muted line-through decoration-1" : ""}>{destLabel(l.destination)}</span>
+                <span className={fixed && allowedNow.length === 0 ? "text-ink-muted line-through decoration-1" : ""}>{destLabel(l.destination)}</span>
                 <span className="text-[13px] font-normal text-ink-muted">
-                  {fixed ? "no longer receives " : "received "}
-                  {l.fields.map((f) => FIELD_LABEL[f].toLowerCase()).join(", ")}
+                  {!fixed && `received ${words(l.fields)}`}
+                  {fixed && l.fields.length > 0 && `no longer receives ${words(l.fields)}`}
+                  {fixed && l.fields.length > 0 && allowedNow.length > 0 && "; "}
+                  {fixed && allowedNow.length > 0 && `${words(allowedNow)} now allowed by the data map`}
                 </span>
               </span>
               <span className="line-clamp-3 pl-4">
-                <Captured text={cap.excerpt} needles={l.hits.map((h) => h.needle)} redacted={fixed} delay={i * 80} />
+                <Captured text={cap.excerpt} needles={needles} redacted={fixed} delay={i * 80} />
               </span>
             </button>
           </li>

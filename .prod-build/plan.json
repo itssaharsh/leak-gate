@@ -631,10 +631,17 @@
         "observe: on a real merge request the flow holds an undeclared destination for the privacy lead without a commit"
       ],
       "rollback": "git revert",
-      "status": "doing",
+      "status": "done",
       "notes": "Requested 13 Oct: do what you can to win. The flow instructions already hold unknown destinations; the gate rejected unknown vendors, so the path never ran.",
       "base": "bb05f21",
-      "started_after": 55
+      "started_after": 55,
+      "evidence": [
+        "E0078",
+        "E0079",
+        "E0080",
+        "E0081",
+        "E0082"
+      ]
     }
   ]
 }

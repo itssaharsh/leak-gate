@@ -23,6 +23,8 @@ export interface Leak {
   destination: string;
   fields: Field[];
   hits: Hit[];
+  /** After a fix: fields that stopped being leaks because a person allowed them in the data map. */
+  allowedNow?: Field[];
 }
 
 export function leaksOf(report?: DrillReport | null): Leak[] {

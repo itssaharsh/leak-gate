@@ -45,6 +45,8 @@ export interface FeaturedCase {
   /** Short label for the switcher, e.g. "Newsletter opt-in: fixed by the flow". */
   label: string;
   story: StoryStep[];
+  /** Lifecycle stage links for this merge request, overriding LIFECYCLE. */
+  lifecycle?: Record<string, string>;
 }
 
 /** Featured merge requests from CASES (JSON), or the single FEATURED_MR. */

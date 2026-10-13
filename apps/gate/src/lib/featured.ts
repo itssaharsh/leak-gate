@@ -32,13 +32,14 @@ export async function featuredRuns(mr: string = config.featuredMr): Promise<{ be
 }
 
 /** Lifecycle stages, lit only by real objects. LIFECYCLE is JSON {stage: url} set by the pipeline. */
-export function stages(before: RunView | null, after: RunView | null): Stage[] {
+export function stages(before: RunView | null, after: RunView | null, override: Record<string, string> = {}): Stage[] {
   let links: Record<string, string> = {};
   try {
     links = JSON.parse(process.env.LIFECYCLE ?? "{}");
   } catch {
     links = {};
   }
+  links = { ...links, ...override };
   const repo = config.gitlabProjectUrl.replace(/\/$/, "");
   const def = (id: string, label: string, done: boolean, what: string, href?: string): Stage => ({ id, label, done, what, href: links[id] ?? href });
   return [

@@ -82,11 +82,15 @@ export function Console(props: ConsoleProps) {
       beforeLeaks
         .map((l) => {
           const still = afterLeaks.find((a) => a.destination === l.destination);
-          const fields = l.fields.filter((f) => !still?.fields.includes(f));
-          return { ...l, fields, hits: l.hits.filter((h) => fields.includes(h.field)) };
+          // A field can stop being a leak two ways: the code stopped sending it, or a person allowed it in the data map.
+          const allowedAfter = new Set((after?.report.hits ?? []).filter((h) => h.allowed && h.destination === l.destination).map((h) => h.field));
+          const left = l.fields.filter((f) => !still?.fields.includes(f));
+          const fields = left.filter((f) => !allowedAfter.has(f));
+          const allowedNow = left.filter((f) => allowedAfter.has(f));
+          return { ...l, fields, allowedNow, hits: l.hits.filter((h) => left.includes(h.field)) };
         })
-        .filter((l) => l.fields.length > 0),
-    [beforeLeaks, afterLeaks],
+        .filter((l) => l.fields.length > 0 || l.allowedNow.length > 0),
+    [beforeLeaks, afterLeaks, after],
   );
   const listLeaks = mode === "after" ? removed : leaksOf(report);
   const leakCount = mode === "after" ? countLeaks(after?.report) : countLeaks(report);
@@ -300,7 +304,7 @@ export function Console(props: ConsoleProps) {
         </div>
         <div className="flex flex-col gap-3 lg:col-span-4">
           <h2 className="text-[15px] font-semibold">
-            {mode === "after" ? "What the fix removed" : "Each leak, with the line that proves it"}
+            {mode === "after" ? "What happened, and what changed" : "Each leak, with the line that proves it"}
           </h2>
           {mode !== "after" && <HoldNote report={report} story={props.story} />}
           {mode === "after" && props.story && props.story.length > 0 && <Story steps={props.story} />}
