@@ -42,8 +42,8 @@ const STEPS: { title: string; body: string; file?: string; where: string }[] = [
     where: "GitLab merge request",
   },
   {
-    title: "A GitLab Duo flow fixes it",
-    body: "The failed pipeline triggers a custom flow. It reads the leak report, traces each captured line to the code that wrote it, commits the smallest change that stops the leak, and the pipeline runs the same drill again.",
+    title: "A GitLab Duo flow fixes it, or holds it",
+    body: "The failed pipeline triggers a custom flow. It reads the leak report, traces each captured line to the code that wrote it, commits the smallest change that stops the leak, and the pipeline runs the same drill again. If the data reached a destination the data map does not list, it changes no code and holds the merge request for the privacy lead, as on !2.",
     file: ".gitlab/duo/flows/leak-fix.yaml",
     where: "GitLab Duo Agent Platform",
   },
